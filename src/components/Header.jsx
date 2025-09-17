@@ -1,9 +1,8 @@
-"use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setUserDetails } from "../store/slices/firebaseSlice";
 import { setUser } from "../store/slices/authSlice";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Heart, LogOut } from "lucide-react";
 import { Button } from "./ui/button";

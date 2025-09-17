@@ -1,10 +1,9 @@
-"use client";
 
 import { useState, useEffect, useRef } from "react"; // Added useRef
 import Hero from "../components/Hero";
 import Header from "../components/Header";
 import EnhancedMenuSystem from "../components/ui/EnhancedMenuSystem";
-import Howitworks from "./howitworks/page";
+import Howitworks from "./HowItWorks";
 import Testimonials from "../components/ui/TestimonialsSection";
 
 export default function Home() {

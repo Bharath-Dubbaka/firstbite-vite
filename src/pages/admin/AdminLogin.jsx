@@ -24,7 +24,7 @@ export default function AdminLoginPage() {
          if (response.data.success) {
             // Dispatch the action with the token and admin details
             dispatch(adminLoginSuccess(response.data));
-            router.push("/admin/dashboard");
+            router("/admin/dashboard");
          } else {
             setError(response.data.error || "Login failed.");
          }

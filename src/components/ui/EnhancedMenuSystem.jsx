@@ -1,4 +1,3 @@
-"use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -14,7 +13,8 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "../../store/slices/cartSlice";
-import { useRouter, usePathname } from "next/navigation";
+import { useNavigate } from "react-router-dom";
+
 
 // DabbaMenu remains hardcoded as requested
 const dabbaMenu = [
@@ -300,7 +300,7 @@ function MenuCard({ item, onAdd, onShowDetails, type = "cafe" }) {
 export default function EnhancedMenuSystem() {
    const [activeMenu, setActiveMenu] = useState("cafe");
    const [selectedItem, setSelectedItem] = useState(null);
-   const router = useRouter();
+   const router = useNavigate();
 
    // State for holding fetched cafe menu data
    const [cafeMenu, setCafeMenu] = useState([]);
@@ -358,7 +358,7 @@ export default function EnhancedMenuSystem() {
    };
 
    const handleCartClick = () => {
-      router.push("/cart");
+      router("/cart");
    };
 
    const showItemDetails = (item) => {

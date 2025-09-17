@@ -1,8 +1,7 @@
-"use client";
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import AuthService from "../services/AuthService"; // your existing service
-import CheckoutCompleteModal  from "./CheckoutCompleteModal";
+import CheckoutCompleteModal  from "../components/CheckoutCompleteModal";
 
 export default function CheckoutButton() {
    const dispatch = useDispatch();

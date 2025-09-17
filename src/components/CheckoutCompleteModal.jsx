@@ -1,8 +1,8 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useState } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
-import AddressModal from "../app/checkoutpage/AddressModal";
+import { useNavigate } from "react-router-dom";
+import AddressModal from "./AddressModal";
 import { clearCart } from "../store/slices/cartSlice";
 import { apiClient } from "../services/apiClient";
 import { auth } from "../services/firebase";
@@ -12,7 +12,7 @@ const CheckoutCompleteModal = ({ onClose }) => {
    const { userDetails } = useSelector((state) => state.firebase);
    const cart = useSelector((state) => state.cart);
    const dispatch = useDispatch();
-   const router = useRouter();
+   const router = useNavigate();
 
    const [selectedAddress, setSelectedAddress] = useState(
       userDetails?.addresses?.[0] || null
@@ -124,7 +124,7 @@ const CheckoutCompleteModal = ({ onClose }) => {
          // Clear cart after successful order
          dispatch(clearCart());
          onClose();
-         router.push(`/orders/${orderData._id}`);
+         router(`/orders/${orderData._id}`);
       } catch (error) {
          console.error("Order placement failed:", error);
 

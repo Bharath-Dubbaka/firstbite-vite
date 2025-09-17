@@ -7,9 +7,9 @@ import {
    increaseQty,
    decreaseQty,
    removeItem,
-} from "../../store/slices/cartSlice";
-import CheckoutButton from "../../components/CheckoutButton";
-import { auth } from "../../services/firebase";
+} from "../store/slices/cartSlice";
+import CheckoutButton from "../components/CheckoutButton";
+import { auth } from "../services/firebase";
 import axios from "axios";
 
 const CartPage = () => {

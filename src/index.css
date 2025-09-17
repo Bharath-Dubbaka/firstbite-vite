@@ -1,10 +1,10 @@
 /* ./src/app/globals.css */
+@import "@fontsource/dancing-script"; /* MOVED TO TOP */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import "@fontsource/dancing-script";
 
 .font-signature {
    font-family: "Dancing Script", cursive;

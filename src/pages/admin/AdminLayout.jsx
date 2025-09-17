@@ -33,13 +33,13 @@ export default function AdminLayout({ children }) {
       // If the state is not authenticated (after checking localStorage via getInitialState)
       // and we are not on the login page, redirect.
       if (!isAuthenticated && window.location.pathname !== "/admin/login") {
-         router.push("/admin/login");
+         router("/admin/login");
       }
    }, [isAuthenticated, router]);
 
    const handleLogout = () => {
       dispatch(adminLogout());
-      router.push("/admin/login");
+      router("/admin/login");
    };
 
    // Do not render layout on the login page itself to avoid nested structure

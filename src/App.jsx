@@ -1,7 +1,7 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 // Import your page components (we will create/move these next)
 import Home from "./pages/Home";
@@ -11,15 +11,15 @@ import BookUs from "./pages/BookUs";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Cart from "./pages/Cart";
-import Orders from "./pages/Orders";
+import Orders from "./pages/Order";
 import OrderDetails from "./pages/OrderDetails";
 
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminLogin from "./pages/admin/AdminLogin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminMenu from "./pages/admin/AdminMenu";
-import AdminOrders from "./pages/admin/AdminOrders";
+import AdminDashboard from "./pages/admin/DashboardPage";
+import AdminMenu from "./pages/admin/MenuManagementPage";
+import AdminOrders from "./pages/admin/OrderManagementPage";
 
 // This layout includes the Header and Footer for all public-facing pages
 const MainLayout = () => (
