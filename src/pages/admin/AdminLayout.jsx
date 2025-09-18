@@ -1,15 +1,20 @@
+// src/pages/admin/AdminLayout.jsx - CORRECTED
+
 import { useEffect } from "react";
 import { useNavigate, useLocation, Link, Outlet } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { adminLogout } from "@/store/slices/adminAuthSlice"; // Adjust path
+import { adminLogout } from "@/store/slices/adminAuthSlice";
 import { Shield, Home, Utensils, ShoppingCart, LogOut } from "lucide-react";
 
-// NavLink component remains the same...
-const NavLink = ({ href, icon, children }) => {
-   const pathname = usePathname();
-   const isActive = pathname === href;
+// CORRECTED NavLink component
+const NavLink = ({ to, icon, children }) => {
+   const location = useLocation(); // Use useLocation hook here
+   const isActive = location.pathname === to;
+
    return (
-      <Link href={href}>
+      <Link to={to}>
+         {" "}
+         {/* Changed href to to */}
          <span
             className={`flex items-center p-2 rounded-lg transition-colors ${
                isActive
@@ -24,30 +29,30 @@ const NavLink = ({ href, icon, children }) => {
    );
 };
 
-export default function AdminLayout({ children }) {
-   const router = useNavigate();
+export default function AdminLayout() {
+   const navigate = useNavigate();
+   const location = useLocation(); // Call useLocation at the top level
    const dispatch = useDispatch();
    const { isAuthenticated, admin } = useSelector((state) => state.adminAuth);
 
    useEffect(() => {
-      // If the state is not authenticated (after checking localStorage via getInitialState)
-      // and we are not on the login page, redirect.
-      if (!isAuthenticated && window.location.pathname !== "/admin/login") {
-         router("/admin/login");
+      if (!isAuthenticated && location.pathname !== "/admin/login") {
+         navigate("/admin/login");
       }
-   }, [isAuthenticated, router]);
+   }, [isAuthenticated, location.pathname, navigate]);
 
    const handleLogout = () => {
       dispatch(adminLogout());
-      router("/admin/login");
+      navigate("/admin/login");
    };
 
-   // Do not render layout on the login page itself to avoid nested structure
-   if (useLocation() === "/admin/login") {
-      return <>{children}</>;
+   // CORRECTED: Check location.pathname
+   // This logic prevents the layout from showing on the login page itself.
+   if (location.pathname === "/admin/login") {
+      return <Outlet />; // Or just the children if you were passing them
    }
 
-   // Show a loading state or null while authentication is being verified from the store
+   // Show a loading/verification state if not authenticated yet
    if (!isAuthenticated) {
       return (
          <div className="flex items-center justify-center min-h-screen">
@@ -70,13 +75,14 @@ export default function AdminLayout({ children }) {
                </span>
             </div>
             <nav className="flex-1 p-4 space-y-2">
-               <NavLink href="/admin/dashboard" icon={<Home size={20} />}>
+               {/* Changed href to to */}
+               <NavLink to="/admin/dashboard" icon={<Home size={20} />}>
                   Dashboard
                </NavLink>
-               <NavLink href="/admin/menu" icon={<Utensils size={20} />}>
+               <NavLink to="/admin/menu" icon={<Utensils size={20} />}>
                   Menu
                </NavLink>
-               <NavLink href="/admin/orders" icon={<ShoppingCart size={20} />}>
+               <NavLink to="/admin/orders" icon={<ShoppingCart size={20} />}>
                   Orders
                </NavLink>
             </nav>

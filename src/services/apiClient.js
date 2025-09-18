@@ -14,7 +14,7 @@ export async function apiClient(url, method = "GET", data) {
    };
 
    const res = await fetch(
-      `${process.env.VITE_BACKEND_URL}${url}`,
+      `${import.meta.env.VITE_BACKEND_URL}${url}`,
       options
    );
    const json = await res.json();

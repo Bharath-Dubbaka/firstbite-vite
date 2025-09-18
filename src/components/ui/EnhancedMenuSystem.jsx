@@ -314,7 +314,7 @@ export default function EnhancedMenuSystem() {
          try {
             setLoading(true);
             const response = await axios.get(
-               `${process.env.VITE_BACKEND_URL}/api/menu`
+               `${import.meta.env.VITE_BACKEND_URL}/api/menu`
             );
             const items = response.data.data;
 

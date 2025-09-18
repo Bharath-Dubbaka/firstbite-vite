@@ -63,11 +63,11 @@ export default function Header() {
    }, []);
 
    const navItems = [
-      { href: "/", label: "Home" },
-      { href: "/about", label: "About" },
-      { href: "/howitworks", label: "How it works" },
-      { href: "/bookus", label: "Book Us" },
-      { href: "/contact", label: "Contact" },
+      { to: "/", label: "Home" },
+      { to: "/about", label: "About" },
+      { to: "/howitworks", label: "How it works" },
+      { to: "/bookus", label: "Book Us" },
+      { to: "/contact", label: "Contact" },
    ];
 
    const handleGetStarted = async () => {
@@ -123,7 +123,7 @@ export default function Header() {
          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16 md:h-20">
                {/* Logo */}
-               <Link href="/">
+               <Link to="/">
                   <motion.div
                      className="flex items-center space-x-2"
                      initial={{ opacity: 0, x: -20 }}
@@ -142,14 +142,14 @@ export default function Header() {
                <nav className="hidden lg:flex items-center space-x-8">
                   {navItems.map((item, index) => (
                      <motion.div
-                        key={item.href}
+                        key={item.to}
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: index * 0.1 }}
                         whileHover={{ scale: 1.05 }}
                      >
                         <Link
-                           href={item.href}
+                           to={item.to}
                            className="text-gray-700 hover:text-red-500 font-medium text-sm uppercase tracking-wide transition-colors duration-200"
                         >
                            {item.label}
@@ -239,7 +239,7 @@ export default function Header() {
                               </p>
                               <p className="border-t-2 text-xs md:text-sm px-2 pt-2 mt-2 hover:bg-red-50 flex items-center transition-colors duration-200 w-full py-2 text-left">
                                  <Link
-                                    href={"/orders"}
+                                    to={"/orders"}
                                     className="text-gray-700 hover:text-blue-700  font-medium text-sm uppercase tracking-wide transition-colors duration-200"
                                  >
                                     My Orders
@@ -312,13 +312,13 @@ export default function Header() {
                   <div className="px-4 py-6 space-y-4">
                      {navItems.map((item, index) => (
                         <motion.div
-                           key={item.href}
+                           key={item.to}
                            initial={{ opacity: 0, y: -20 }}
                            animate={{ opacity: 1, y: 0 }}
                            transition={{ duration: 0.5, delay: index * 0.1 }}
                         >
                            <Link
-                              href={item.href}
+                              to={item.to}
                               className="block text-gray-700 hover:text-red-500 font-medium text-sm uppercase tracking-wide transition-colors duration-200"
                               onClick={() => setIsMenuOpen(false)}
                            >
