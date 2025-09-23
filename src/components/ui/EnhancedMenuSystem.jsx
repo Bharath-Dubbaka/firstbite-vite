@@ -14,8 +14,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "../../store/slices/cartSlice";
 import { useNavigate } from "react-router-dom";
-
-
+import { BASE_URL } from "../../lib/constants";
 // DabbaMenu remains hardcoded as requested
 const dabbaMenu = [
    {
@@ -124,7 +123,9 @@ const MenuDetailModal = ({ item, onClose }) => {
                   {item.rating}
                </div>
             </div>
-            <p className="text-gray-600 my-4">{item.description}</p>
+            <p className="text-gray-600 my-4">
+               {item.description || item.desc}
+            </p>
             {/* You can add more details here later, like ingredients or allergens */}
          </div>
       </div>
@@ -313,9 +314,7 @@ export default function EnhancedMenuSystem() {
       const fetchCafeMenu = async () => {
          try {
             setLoading(true);
-            const response = await axios.get(
-               `${import.meta.env.VITE_BACKEND_URL}/api/menu`
-            );
+            const response = await axios.get(`${BASE_URL}/menu`);
             const items = response.data.data;
 
             // Process the flat array from the backend into grouped sections

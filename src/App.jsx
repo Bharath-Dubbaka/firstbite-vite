@@ -3,6 +3,9 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
+//for ✅ Global authentication state management / ✅ Handles redirect results at app level / ✅ Sets up global auth listeners
+import AuthHandler from "./components/AuthHandler";
+
 // Import your page components (we will create/move these next)
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -24,6 +27,7 @@ import AdminOrders from "./pages/admin/OrderManagementPage";
 // This layout includes the Header and Footer for all public-facing pages
 const MainLayout = () => (
    <>
+      <AuthHandler />
       <Header />
       <main>
          <Outlet /> {/* Child routes will render here */}
