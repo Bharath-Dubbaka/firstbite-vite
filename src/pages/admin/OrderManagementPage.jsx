@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { BASE_URL } from "../../lib/constants";
 
 export default function OrderManagementPage() {
    const [orders, setOrders] = useState([]);
@@ -18,7 +19,7 @@ export default function OrderManagementPage() {
    const [dateFilter, setDateFilter] = useState("all");
    const [sortBy, setSortBy] = useState("newest");
 
-   const API_BASE_URL = "http://localhost:9999/api/admin/orders";
+   const API_BASE_URL = BASE_URL + "/admin/orders";
 
    const fetchOrders = async () => {
       setLoading(true);

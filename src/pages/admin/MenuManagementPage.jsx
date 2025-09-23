@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Plus, Edit, Trash2 } from "lucide-react";
+import { BASE_URL } from "../../lib/constants";
 
 // A simple modal component
 const MenuModal = ({ item, onClose, onSave }) => {
@@ -393,7 +394,7 @@ export default function MenuManagementPage() {
    const [isModalOpen, setIsModalOpen] = useState(false);
    const [editingItem, setEditingItem] = useState(null);
 
-   const API_BASE_URL = "http://localhost:9999/api/admin/menu";
+   const API_BASE_URL = BASE_URL + "/admin/menu";
 
    const fetchMenuItems = async () => {
       setLoading(true);

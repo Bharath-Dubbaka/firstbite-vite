@@ -1,13 +1,13 @@
 //src/pages/admin/AdminLogin.jsx
 
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { adminLoginSuccess } from "@/store/slices/adminAuthSlice"; // Adjust path if needed
+import { BASE_URL } from "../../lib/constants";
 
-const API_URL = "http://localhost:9999/api/admin/login";
+const API_URL = BASE_URL + "/admin/login";
 
 export default function AdminLoginPage() {
    const [email, setEmail] = useState("");

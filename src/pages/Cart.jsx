@@ -11,6 +11,7 @@ import {
 import CheckoutButton from "../components/CheckoutButton";
 import { auth } from "../services/firebase";
 import axios from "axios";
+import { BASE_URL } from "../lib/constants";
 
 const CartPage = () => {
    const dispatch = useDispatch();
@@ -39,7 +40,7 @@ const CartPage = () => {
          if (!currentUser) return false;
 
          const token = await currentUser.getIdToken();
-         const response = await axios.get("http://localhost:9999/api/orders", {
+         const response = await axios.get(BASE_URL + "/orders", {
             headers: { Authorization: `Bearer ${token}` },
          });
 

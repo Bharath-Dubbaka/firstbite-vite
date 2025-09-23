@@ -6,6 +6,7 @@ import AddressModal from "./AddressModal";
 import { clearCart } from "../store/slices/cartSlice";
 import { apiClient } from "../services/apiClient";
 import { auth } from "../services/firebase";
+import { BASE_URL } from "../lib/constants";
 
 const CheckoutCompleteModal = ({ onClose }) => {
    const { user } = useSelector((state) => state.auth);
@@ -99,8 +100,8 @@ const CheckoutCompleteModal = ({ onClose }) => {
 
          const token = await currentUser.getIdToken();
 
-         const response = await axios.post(
-            "http://localhost:9999/api/orders",
+         const response = await axios.post(BASE_URL + 
+            "/orders",
             payload,
             {
                headers: {

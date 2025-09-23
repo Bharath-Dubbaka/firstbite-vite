@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { auth } from "../services/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
+import { BASE_URL } from "../lib/constants";
 
 const OrdersPage = () => {
    const router = useNavigate();
@@ -50,7 +51,7 @@ const OrdersPage = () => {
 
          const token = await currentUser.getIdToken();
 
-         const response = await axios.get("http://localhost:9999/api/orders", {
+         const response = await axios.get(BASE_URL + "/orders", {
             headers: {
                Authorization: `Bearer ${token}`,
             },

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Users, ShoppingCart, DollarSign, List } from "lucide-react";
 import { useSelector } from "react-redux"; // Import useSelector
+import { BASE_URL } from "../../lib/constants";
 
 // Reusable card component for stats
 // StatCard component remains the same...
@@ -38,7 +39,7 @@ export default function DashboardPage() {
       const fetchStats = async () => {
          try {
             const response = await axios.get(
-               "http://localhost:9999/api/admin/dashboard",
+               BASE_URL + "/admin/dashboard",
                {
                   headers: { Authorization: `Bearer ${token}` }, // Use the token from Redux
                }
