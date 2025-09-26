@@ -137,17 +137,14 @@
 
 // export default AuthService;
 
-
-
-
 //FOR PRODUCTION WITHOUT HTTPS
 // services/AuthService.js
 import { auth } from "./firebase";
-import { 
-  GoogleAuthProvider, 
-  signInWithRedirect, 
-  getRedirectResult, 
-  onAuthStateChanged 
+import {
+   GoogleAuthProvider,
+   signInWithRedirect,
+   getRedirectResult,
+   onAuthStateChanged,
 } from "firebase/auth";
 import { UserDetailsService } from "./UserDetailsService";
 
@@ -157,22 +154,21 @@ class AuthService {
       try {
          console.log("Starting Google redirect authentication...");
          const provider = new GoogleAuthProvider();
-         
+
          // Add scopes
-         provider.addScope('email');
-         provider.addScope('profile');
-         
+         provider.addScope("email");
+         provider.addScope("profile");
+
          // Set custom parameters if needed
          provider.setCustomParameters({
-            prompt: 'select_account'
+            prompt: "select_account",
          });
 
          // Redirect to Google sign-in (this will navigate away from your app)
          await signInWithRedirect(auth, provider);
-         
+
          // Note: Code after this line won't execute as user is redirected
          // The result will be handled by handleRedirectResult()
-         
       } catch (error) {
          console.error("Google redirect sign-in failed:", error);
          throw new Error(`Google sign-in failed: ${error.message}`);
@@ -184,7 +180,7 @@ class AuthService {
       try {
          console.log("Checking for redirect result...");
          const result = await getRedirectResult(auth);
-         
+
          if (!result) {
             console.log("No redirect result found");
             return null;
@@ -211,7 +207,9 @@ class AuthService {
 
          try {
             // Try to save/update user details in backend
-            const savedDetails = await UserDetailsService.saveUserDetails(userData);
+            const savedDetails = await UserDetailsService.saveUserDetails(
+               userData
+            );
             console.log("User details saved to backend");
 
             // Update Redux with complete user details
@@ -219,32 +217,42 @@ class AuthService {
 
             return { userData, details: savedDetails };
          } catch (backendError) {
-            console.warn("Backend save failed, trying to fetch existing:", backendError.message);
+            console.warn(
+               "Backend save failed, trying to fetch existing:",
+               backendError.message
+            );
 
             try {
                // If save failed, try to fetch existing details
-               const existingDetails = await UserDetailsService.getUserDetails();
+               const existingDetails =
+                  await UserDetailsService.getUserDetails();
                if (existingDetails) {
                   dispatch(setUserDetails(existingDetails));
                   return { userData, details: existingDetails };
                }
             } catch (fetchError) {
-               console.warn("Fetch existing details failed:", fetchError.message);
+               console.warn(
+                  "Fetch existing details failed:",
+                  fetchError.message
+               );
             }
 
             // If all else fails, continue with just user data
             console.log("Continuing with user data only");
             return { userData, details: null };
          }
-
       } catch (error) {
          console.error("Redirect result handling failed:", error);
-         
+
          // Handle specific error cases
-         if (error.code === 'auth/account-exists-with-different-credential') {
-            throw new Error('An account already exists with the same email address but different sign-in credentials.');
-         } else if (error.code === 'auth/credential-already-in-use') {
-            throw new Error('This credential is already associated with a different user account.');
+         if (error.code === "auth/account-exists-with-different-credential") {
+            throw new Error(
+               "An account already exists with the same email address but different sign-in credentials."
+            );
+         } else if (error.code === "auth/credential-already-in-use") {
+            throw new Error(
+               "This credential is already associated with a different user account."
+            );
          } else {
             throw new Error(`Authentication failed: ${error.message}`);
          }
@@ -271,8 +279,8 @@ class AuthService {
       try {
          // First, check for redirect result (user coming back from Google)
          const redirectResult = await this.handleRedirectResult(
-            dispatch, 
-            actions.setUser, 
+            dispatch,
+            actions.setUser,
             actions.setUserDetails
          );
 
@@ -310,7 +318,6 @@ class AuthService {
 
          // This return might not be reached due to redirect
          return null;
-
       } catch (error) {
          console.error("Auth flow error:", error);
          throw new Error(`Authentication failed: ${error.message}`);
@@ -320,11 +327,11 @@ class AuthService {
    // NEW: Set up auth state listener for redirect-based auth
    static setupAuthStateListener(dispatch, setUser, setUserDetails) {
       console.log("Setting up auth state listener...");
-      
+
       return onAuthStateChanged(auth, async (user) => {
          if (user) {
             console.log("Auth state changed - user signed in:", user.email);
-            
+
             // Get fresh token
             const idToken = await user.getIdToken();
             localStorage.setItem("firebaseToken", idToken);
@@ -345,9 +352,11 @@ class AuthService {
                   dispatch(setUserDetails(details));
                }
             } catch (error) {
-               console.warn("Could not fetch user details on auth state change:", error.message);
+               console.warn(
+                  "Could not fetch user details on auth state change:",
+                  error.message
+               );
             }
-
          } else {
             console.log("Auth state changed - user signed out");
             localStorage.removeItem("firebaseToken");
@@ -384,3 +393,12 @@ class AuthService {
 }
 
 export default AuthService;
+
+//The good news: we can fix both by using a free DNS alias like nip.io + Let’s Encrypt HTTPS. And don’t worry — this setup won’t block you later from switching to a real domain.
+// When you get a proper domain, you’ll just swap out the server_name and re-run certbot. ✅
+
+// OG sudo nano /etc/nginx/sites-available/default
+
+// # Default server configuration
+// #
+//

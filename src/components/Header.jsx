@@ -357,7 +357,6 @@
 //    );
 // }
 
-
 //FOR PRODUCTION TESTING WITHOUT HTTPS
 
 import React, { useState, useEffect, useRef } from "react";
