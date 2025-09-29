@@ -93,3 +93,7 @@ Adminconsole orders / order expand not showing : deliver to someone else Data
 <!--  -->
 
 frm cartpage after user loggins he gets alert of login and store missing imidiaetly AFTERl he successfully logs in
+
+<!-- IMP -->
+
+we are not SHOWING user Lat and longitude of user inside ADMIN CONSOLE

@@ -127,14 +127,14 @@ const CartPage = () => {
                {items.map((item) => (
                   <div
                      key={item._id}
-                     className="flex justify-between items-center bg-white p-4 rounded-lg shadow"
+                     className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-white rounded-lg shadow"
                   >
                      {/* Item Info */}
-                     <div className="flex items-start gap-3">
+                     <div className="flex items-start gap-4 w-full sm:w-2/3">
                         <img
                            src={item.image}
                            alt={item.name}
-                           className="w-20 h-20 object-cover rounded"
+                           className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
                         />
                         <div>
                            <h2 className="font-semibold">{item.name}</h2>
@@ -146,7 +146,7 @@ const CartPage = () => {
                      </div>
 
                      {/* Quantity Controls */}
-                     <div className="flex items-center gap-3">
+                     <div className="flex items-center border rounded-lg overflow-hidden">
                         <button
                            className="px-3 py-1 border rounded hover:bg-gray-50 transition-colors"
                            onClick={() => dispatch(decreaseQty(item._id))}
@@ -173,7 +173,7 @@ const CartPage = () => {
                ))}
 
                {/* Total Section */}
-               <div className="border-t pt-4 bg-white p-4 rounded-lg shadow">
+               <div className="border-t pt-4 bg-white p-4 rounded-lg shadow flex flex-col sm:flex-row justify-between items-center gap-4">
                   <div className="flex justify-between items-center">
                      <h2 className="text-xl font-bold">
                         Total: ₹{totalAmount}
