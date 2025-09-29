@@ -4,11 +4,11 @@ import { apiClient } from "./apiClient";
 
 export class UserDetailsService {
    static async getUserDetails() {
-      return await apiClient("/api/user-details", "GET");
+      return await apiClient("/user-details", "GET");
    }
 
    static async saveUserDetails(details) {
-      return await apiClient("/api/post/user-details", "POST", details);
+      return await apiClient("/post/user-details", "POST", details);
    }
 }
 

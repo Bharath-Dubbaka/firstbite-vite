@@ -138,7 +138,7 @@ const AddressModal = ({ addresses = [], onSelect, onClose }) => {
          setSaving(true);
 
          //using apiClient utility that handles token retrieval
-         const response = await apiClient("/api/post/user-details", "POST", {
+         const response = await apiClient("/post/user-details", "POST", {
             addresses: [...addresses, newAddress],
          });
 
