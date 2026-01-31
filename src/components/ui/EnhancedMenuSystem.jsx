@@ -315,7 +315,10 @@ export default function EnhancedMenuSystem() {
          try {
             setLoading(true);
             const response = await axios.get(`${BASE_URL}/menu`);
-            const items = response.data.data;
+            console.log("MENU RESPONSE:", response?.data);
+
+            const items = response?.data?.data;
+            console.log("ITEMS FROM RESPONSE:", items);
 
             // Process the flat array from the backend into grouped sections
             const groupedMenu = items.reduce((acc, item) => {
