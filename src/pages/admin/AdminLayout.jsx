@@ -76,9 +76,9 @@ export default function AdminLayout() {
             </div>
             <nav className="flex-1 p-4 space-y-2">
                {/* Changed href to to */}
-               <NavLink to="/admin/dashboard" icon={<Home size={20} />}>
+               {/* <NavLink to="/admin/dashboard" icon={<Home size={20} />}>
                   Dashboard
-               </NavLink>
+               </NavLink> */}
                <NavLink to="/admin/menu" icon={<Utensils size={20} />}>
                   Menu
                </NavLink>

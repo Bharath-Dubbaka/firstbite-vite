@@ -19,7 +19,7 @@ export default function Header() {
 
    const dispatch = useDispatch();
    const { user, isAuthenticated, loading } = useSelector(
-      (state) => state.auth
+      (state) => state.auth,
    );
    const { userDetails } = useSelector((state) => state.firebase);
 
@@ -98,12 +98,19 @@ export default function Header() {
    // Show loading state
    if (loading) {
       return (
-         <header className="fixed top-0 left-0 w-full z-50 bg-white/95 backdrop-blur-md shadow-lg">
+         <header
+            className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
+               isScrolled
+                  ? "bg-black/85 backdrop-blur-md shadow-lg"
+                  : "bg-black/30 backdrop-blur-sm"
+            }`}
+         >
+            {" "}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                <div className="flex items-center justify-between h-16 md:h-20">
                   <div className="text-xl md:text-2xl font-bold">
                      <span className="text-red-500">Love</span>
-                     <span className="text-green-700">@firstbite</span>
+                     <span className="text-green-700">@firstbyte</span>
                   </div>
                   <div className="text-sm">Loading...</div>
                </div>
@@ -133,7 +140,7 @@ export default function Header() {
                      <div className="text-2xl md:text-3xl">💝</div>
                      <div className="text-xl md:text-2xl font-bold">
                         <span className="text-red-500">Love</span>
-                        <span className="text-green-700">@firstbite</span>
+                        <span className="text-green-700">@firstbyte</span>
                      </div>
                   </motion.div>
                </Link>
@@ -150,7 +157,7 @@ export default function Header() {
                      >
                         <Link
                            to={item.to}
-                           className="text-gray-700 hover:text-red-500 font-medium text-sm uppercase tracking-wide transition-colors duration-200"
+                           className="text-black hover:text-red-500 font-medium text-sm uppercase tracking-wide transition-colors duration-200"
                         >
                            {item.label}
                         </Link>
@@ -187,7 +194,7 @@ export default function Header() {
                      {/* Profile Image */}
                      {user.picture ? (
                         <div className="flex items-center gap-2">
-                           <span className="text-sm text-gray-700">
+                           <span className="text-sm text-black">
                               {user.name}
                            </span>
                            <img
@@ -514,7 +521,7 @@ export default function Header() {
 //                <div className="flex items-center justify-between h-16 md:h-20">
 //                   <div className="text-xl md:text-2xl font-bold">
 //                      <span className="text-red-500">Love</span>
-//                      <span className="text-green-700">@firstbite</span>
+//                      <span className="text-green-700">@firstbyte</span>
 //                   </div>
 //                   <div className="flex items-center space-x-2">
 //                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
@@ -566,7 +573,7 @@ export default function Header() {
 //                      <div className="text-2xl md:text-3xl">💝</div>
 //                      <div className="text-xl md:text-2xl font-bold">
 //                         <span className="text-red-500">Love</span>
-//                         <span className="text-green-700">@firstbite</span>
+//                         <span className="text-green-700">@firstbyte</span>
 //                      </div>
 //                   </motion.div>
 //                </Link>

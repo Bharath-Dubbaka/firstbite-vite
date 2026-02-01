@@ -97,7 +97,7 @@ export default function Footer() {
                      <div className="text-3xl">💝</div>
                      <div className="text-xl font-bold">
                         <span className="text-red-400">Love</span>
-                        <span className="text-green-400">@firstbite</span>
+                        <span className="text-green-400">@firstbyte</span>
                      </div>
                   </motion.div>
 

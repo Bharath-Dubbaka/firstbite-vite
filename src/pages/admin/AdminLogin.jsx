@@ -27,13 +27,13 @@ export default function AdminLoginPage() {
          if (response.data.success) {
             // Dispatch the action with the token and admin details
             dispatch(adminLoginSuccess(response.data));
-            router("/admin/dashboard");
+            router("/admin/menu");
          } else {
             setError(response.data.error || "Login failed.");
          }
       } catch (err) {
          setError(
-            err.response?.data?.error || "An error occurred. Please try again."
+            err.response?.data?.error || "An error occurred. Please try again.",
          );
       } finally {
          setLoading(false);
