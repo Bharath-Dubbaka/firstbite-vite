@@ -108,11 +108,11 @@ const MenuDetailModal = ({ item, onClose }) => {
             >
                <X size={24} />
             </button>
-            <img
+            {/* <img
                src={getCafeImage(item, Math.floor(Math.random() * 20) + 1)}
                alt={item.name}
                className="w-full h-64 object-cover rounded-md mb-4"
-            />
+            /> */}
             <h2 className="text-3xl font-bold text-gray-800 italic">
                {item.name}
             </h2>
@@ -126,6 +126,8 @@ const MenuDetailModal = ({ item, onClose }) => {
                </div>
             </div>
             <p className="text-gray-600 my-4">{item.description}</p>
+         
+            {/* Other item details */}
          </div>
       </div>
    );
@@ -192,8 +194,8 @@ function ElegantMenuItem({ item, onAdd, onShowDetails }) {
                <span className="text-2xl font-semibold text-gray-800 min-w-[80px] text-right">
                   ₹{item.price}
                </span>
-
-               <button
+               {/* To Add item in cart */}
+               {/* <button
                   onClick={handleAdd}
                   disabled={isAdding}
                   className={`px-5 py-2.5 rounded-full font-medium transition-all duration-300 ${
@@ -210,7 +212,7 @@ function ElegantMenuItem({ item, onAdd, onShowDetails }) {
                         Add
                      </>
                   )}
-               </button>
+               </button> */}
             </div>
          </div>
       </div>
