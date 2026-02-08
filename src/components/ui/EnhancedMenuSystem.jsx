@@ -394,11 +394,11 @@ export default function EnhancedMenuSystem() {
             </div>
 
             {/* View All Menu Button */}
-            <div className="flex justify-center mt-12">
+            {/* <div className="flex justify-center mt-12">
                <button className="bg-amber-700 hover:bg-amber-800 text-white px-8 py-3.5 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-md">
                   View All Menu
                </button>
-            </div>
+            </div> */}
          </div>
       </section>
    );

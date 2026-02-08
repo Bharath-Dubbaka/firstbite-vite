@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react"; // Added useRef
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -20,46 +19,13 @@ import {
    ArrowRight,
    MessageCircle,
 } from "lucide-react";
+import Input from "../components/ui/Input";
 
 // Tabs Component for Services
 export default function Bookus() {
-   const [activeTab, setActiveTab] = useState("dabba");
+   const [activeTab, setActiveTab] = useState("kitty");
 
    const tabs = [
-      {
-         title: "Dabba Service",
-         value: "dabba",
-         content: (
-            <div className="w-full overflow-hidden relative h-full rounded-2xl p-8 bg-gradient-to-br from-orange-500 to-red-500">
-               <div className="text-white">
-                  <div className="flex items-center gap-3 mb-6">
-                     <UtensilsCrossed className="w-8 h-8" />
-                     <h3 className="text-2xl md:text-3xl font-bold">
-                        Daily Dabba Service
-                     </h3>
-                  </div>
-                  <p className="text-lg mb-6 opacity-90">
-                     Fresh home-cooked meals delivered daily with flexible
-                     subscription plans.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <div className="bg-white bg-opacity-20 rounded-xl p-4">
-                        <h4 className="font-semibold mb-2">Daily Plans</h4>
-                        <p className="text-sm opacity-80">
-                           Fresh meals every day
-                        </p>
-                     </div>
-                     <div className="bg-white bg-opacity-20 rounded-xl p-4">
-                        <h4 className="font-semibold mb-2">Weekly Plans</h4>
-                        <p className="text-sm opacity-80">
-                           Flexible weekly options
-                        </p>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         ),
-      },
       {
          title: "Kitty Party",
          value: "kitty",
@@ -172,6 +138,40 @@ export default function Bookus() {
             </div>
          ),
       },
+      // {
+      //    title: "Dabba Service",
+      //    value: "dabba",
+      //    content: (
+      //       <div className="w-full overflow-hidden relative h-full rounded-2xl p-8 bg-gradient-to-br from-orange-500 to-red-500">
+      //          <div className="text-white">
+      //             <div className="flex items-center gap-3 mb-6">
+      //                <UtensilsCrossed className="w-8 h-8" />
+      //                <h3 className="text-2xl md:text-3xl font-bold">
+      //                   Daily Dabba Service
+      //                </h3>
+      //             </div>
+      //             <p className="text-lg mb-6 opacity-90">
+      //                Fresh home-cooked meals delivered daily with flexible
+      //                subscription plans.
+      //             </p>
+      //             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      //                <div className="bg-white bg-opacity-20 rounded-xl p-4">
+      //                   <h4 className="font-semibold mb-2">Daily Plans</h4>
+      //                   <p className="text-sm opacity-80">
+      //                      Fresh meals every day
+      //                   </p>
+      //                </div>
+      //                <div className="bg-white bg-opacity-20 rounded-xl p-4">
+      //                   <h4 className="font-semibold mb-2">Weekly Plans</h4>
+      //                   <p className="text-sm opacity-80">
+      //                      Flexible weekly options
+      //                   </p>
+      //                </div>
+      //             </div>
+      //          </div>
+      //       </div>
+      //    ),
+      // },
    ];
 
    return (
@@ -186,10 +186,59 @@ export default function Bookus() {
                Our Services
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-               From daily meals to special occasions, we have got you covered with
-               our comprehensive food services
+               From daily meals to special occasions, we have got you covered
+               with our comprehensive food services
             </p>
          </motion.div>
+
+         {/* Contact section */}
+         <section className="min-h-screen bg-[#070b12] flex items-center justify-center py-8 md:py-auto px-6 mb-6">
+            <div className="max-w-6xl w-full grid md:grid-cols-2 gap-10 items-center">
+               {/* LEFT SIDE */}
+               <div className="text-white">
+                  <h2 className="text-4xl md:text-5xl font-elegant leading-tight mb-10">
+                     BOOKING <br />
+                     <span className="text-[#d4af37]">A TABLE</span>
+                  </h2>
+
+                  <form className="space-y-6">
+                     <Input placeholder="Name*" />
+                     <Input placeholder="Email*" type="email" />
+                     <Input placeholder="Phone Number*" />
+
+                     <select className="form-input">
+                        <option>08:00 pm</option>
+                        <option>09:00 pm</option>
+                        <option>10:00 pm</option>
+                     </select>
+
+                     <select className="form-input">
+                        <option>2 Persons</option>
+                        <option>4 Persons</option>
+                        <option>6 Persons</option>
+                     </select>
+
+                     <Input type="date" />
+
+                     <button
+                        type="submit"
+                        className="w-full bg-[#e3b23c] text-black py-3 rounded-full font-semibold tracking-wide hover:bg-[#cfa12f] transition"
+                     >
+                        Book Table
+                     </button>
+                  </form>
+               </div>
+
+               {/* RIGHT SIDE IMAGE */}
+               <div className="hidden md:block">
+                  <img
+                     src="/lafb_sign.webp"
+                     alt="Restaurant Interiors"
+                     className="rounded-lg w-full h-[520px] object-cover"
+                  />
+               </div>
+            </div>
+         </section>
 
          <div className="relative">
             {/* Tab Navigation */}
@@ -225,7 +274,7 @@ export default function Bookus() {
                            >
                               {tab.content}
                            </motion.div>
-                        )
+                        ),
                   )}
                </AnimatePresence>
             </div>

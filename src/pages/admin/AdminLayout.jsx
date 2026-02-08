@@ -4,7 +4,17 @@ import { useEffect } from "react";
 import { useNavigate, useLocation, Link, Outlet } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { adminLogout } from "@/store/slices/adminAuthSlice";
-import { Shield, Home, Utensils, ShoppingCart, LogOut } from "lucide-react";
+import {
+   Shield,
+   Home,
+   Utensils,
+   ShoppingCart,
+   LogOut,
+   LayoutDashboard,
+   Tablet,
+   UtensilsCrossed,
+   Monitor,
+} from "lucide-react";
 
 // CORRECTED NavLink component
 const NavLink = ({ to, icon, children }) => {
@@ -84,6 +94,15 @@ export default function AdminLayout() {
                </NavLink>
                <NavLink to="/admin/orders" icon={<ShoppingCart size={20} />}>
                   Orders
+               </NavLink>
+               <NavLink to="/admin/tables" icon={<LayoutDashboard size={20} />}>
+                  Tables
+               </NavLink>
+               <NavLink to="/admin/pos" icon={<Tablet size={20} />}>
+                  POS / Take Order
+               </NavLink>
+               <NavLink to="/admin/kitchen" icon={<Monitor size={20} />}>
+                  Kitchen Display
                </NavLink>
             </nav>
             <div className="p-4 border-t border-indigo-500">

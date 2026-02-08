@@ -5,7 +5,14 @@ export default {
       "./src/**/*.{js,ts,jsx,tsx}", // Updated for Vite
    ],
    theme: {
-      extend: {},
+      extend: {
+         fontFamily: {
+            signature: ["Dancing Script", "cursive"],
+            elegant: ["Playfair Display", "serif"],
+            luxury: ["Cormorant Garamond", "serif"],
+            cursive: ["Pacifico", "cursive"],
+         },
+      },
    },
    plugins: [],
 };

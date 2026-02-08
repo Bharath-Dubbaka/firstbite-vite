@@ -23,6 +23,9 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/DashboardPage";
 import AdminMenu from "./pages/admin/MenuManagementPage";
 import AdminOrders from "./pages/admin/OrderManagementPage";
+import TableManagementPage from "./pages/admin/TableManagementPage";
+import InhousePOSPage from "./pages/admin/InhousePOSPage";
+import KitchenDisplayPage from "./pages/admin/KitchenDisplayPage";
 
 // This layout includes the Header and Footer for all public-facing pages
 const MainLayout = () => (
@@ -58,6 +61,9 @@ function App() {
                {/* <Route path="dashboard" element={<AdminDashboard />} /> */}
                <Route path="menu" element={<AdminMenu />} />
                <Route path="orders" element={<AdminOrders />} />
+               <Route path="tables" element={<TableManagementPage />} />
+               <Route path="pos" element={<InhousePOSPage />} />
+               <Route path="kitchen" element={<KitchenDisplayPage />} />
             </Route>
          </Routes>
       </BrowserRouter>

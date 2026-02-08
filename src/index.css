@@ -1,13 +1,28 @@
 /* ./src/app/globals.css */
-@import "@fontsource/dancing-script"; /* MOVED TO TOP */
+@import "@fontsource/dancing-script/500.css"; /* MOVED TO TOP */
+@import "@fontsource/playfair-display/400.css";
+@import "@fontsource/playfair-display/700.css";
+@import "@fontsource/cormorant-garamond/700.css";
+@import "@fontsource/pacifico/400.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
 .font-signature {
    font-family: "Dancing Script", cursive;
+}
+
+.font-elegant {
+   font-family: "Playfair Display", serif;
+}
+
+.font-luxury {
+   font-family: "Cormorant Garamond", serif;
+}
+
+.font-cursive-bold {
+   font-family: "Pacifico", cursive;
 }
 
 :root {
@@ -19,7 +34,25 @@
 body {
    background: var(--background);
    color: var(--foreground);
-   font-family: Arial, Helvetica, sans-serif;
+   font-family: "Cormorant Garamond", serif;
+}
+
+.form-input {
+   width: 100%;
+   background: transparent;
+   border: none;
+   border-bottom: 1px solid #2a2f3a;
+   padding: 12px 0;
+   color: white;
+   outline: none;
+}
+
+.form-input::placeholder {
+   color: #9ca3af;
+}
+
+.form-input:focus {
+   border-color: #d4af37;
 }
 
 /* your SIDE scrollbar styles in carousel etc. */

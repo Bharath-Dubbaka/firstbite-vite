@@ -51,7 +51,7 @@ export default function Hero() {
                      : "opacity-0 translate-y-6"
                }`}
             >
-               <h1 className="text-5xl md:text-[6rem] shadow-2xl italic font-semibold tracking-wide text-white mb-4">
+               <h1 className="text-5xl md:text-[7rem] font-elegant italic font-light tracking-wide text-white mb-4">
                   LOVE AT FIRST BYTE
                </h1>
 

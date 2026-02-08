@@ -1,8 +1,12 @@
 //src/pages/admin/OrderManagementPage.jsx
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { useReactToPrint } from "react-to-print";
 import { BASE_URL } from "../../lib/constants";
+import { toast } from "sonner";
+import { Receipt, Printer, CreditCard, Eye } from "lucide-react";
+import { PrintableBill } from "./PrintableBill";
 
 export default function OrderManagementPage() {
    const [orders, setOrders] = useState([]);
@@ -18,8 +22,79 @@ export default function OrderManagementPage() {
    const [paymentFilter, setPaymentFilter] = useState("all");
    const [dateFilter, setDateFilter] = useState("all");
    const [sortBy, setSortBy] = useState("newest");
+   const [isGenerating, setIsGenerating] = useState(false);
+   const componentRef = useRef(null);
+
+   // Define separate options
+   const onlineStatusOptions = [
+      "placed",
+      "confirmed",
+      "preparing",
+      "ready",
+      "dispatched",
+      "delivered",
+      "cancelled",
+   ];
+   const inhouseStatusOptions = [
+      "confirmed",
+      "preparing",
+      "ready",
+      "served",
+      "billing",
+      "completed",
+      "cancelled",
+   ];
 
    const API_BASE_URL = BASE_URL + "/admin/orders";
+
+   const handlePrint = useReactToPrint({
+      contentRef: componentRef,
+   });
+
+   // Helper to make the UI look nice while keeping DB values clean
+   const getDisplayStatus = (status, source) => {
+      if (source === "in-house") {
+         if (status === "ready") return "READY TO SERVE";
+         if (status === "served") return "SERVED";
+         if (status === "billing") return "BILLING / PRINTED"; // Add this
+         if (status === "completed") return "PAID & CLOSED";
+      }
+      return status.toUpperCase();
+   };
+
+   const generateBill = async (orderId) => {
+      setIsGenerating(true);
+      try {
+         const token = localStorage.getItem("adminToken");
+         const res = await axios.post(
+            `${BASE_URL}/admin/inhouse/${orderId}/generate-bill`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } },
+         );
+
+         toast.success("Bill generated successfully!");
+         fetchOrders(); // Refresh to show the Print button
+      } catch (err) {
+         toast.error(err.response?.data?.error || "Billing failed");
+      } finally {
+         setIsGenerating(false);
+      }
+   };
+
+   const handleCompletePayment = async (orderId, method) => {
+      try {
+         const token = localStorage.getItem("adminToken");
+         await axios.post(
+            `${BASE_URL}/admin/inhouse/${orderId}/complete-payment`,
+            { paymentMethod: method },
+            { headers: { Authorization: `Bearer ${token}` } },
+         );
+         toast.success(`Paid via ${method.toUpperCase()}. Table is now FREE!`);
+         fetchOrders();
+      } catch (err) {
+         toast.error("Payment recording failed");
+      }
+   };
 
    const fetchOrders = async () => {
       setLoading(true);
@@ -59,21 +134,21 @@ export default function OrderManagementPage() {
                   .includes(searchTerm.toLowerCase()) ||
                order.userId?.email
                   ?.toLowerCase()
-                  .includes(searchTerm.toLowerCase())
+                  .includes(searchTerm.toLowerCase()),
          );
       }
 
       // Status filter
       if (statusFilter !== "all") {
          filtered = filtered.filter(
-            (order) => order.orderStatus === statusFilter
+            (order) => order.orderStatus === statusFilter,
          );
       }
 
       // Payment filter
       if (paymentFilter !== "all") {
          filtered = filtered.filter(
-            (order) => order.paymentStatus === paymentFilter
+            (order) => order.paymentStatus === paymentFilter,
          );
       }
 
@@ -83,7 +158,7 @@ export default function OrderManagementPage() {
          const today = new Date(
             now.getFullYear(),
             now.getMonth(),
-            now.getDate()
+            now.getDate(),
          );
          const yesterday = new Date(today);
          yesterday.setDate(yesterday.getDate() - 1);
@@ -136,7 +211,7 @@ export default function OrderManagementPage() {
          await axios.put(
             `${API_BASE_URL}/${orderId}/status`,
             { status: newStatus },
-            { headers: { Authorization: `Bearer ${token}` } }
+            { headers: { Authorization: `Bearer ${token}` } },
          );
          fetchOrders(); // Refresh data
       } catch (err) {
@@ -151,9 +226,12 @@ export default function OrderManagementPage() {
          const token = localStorage.getItem("adminToken");
          console.log("Using admin token:", token ? "Token exists" : "No token"); // Debug log
 
-         const response = await axios.get(`${API_BASE_URL}/${orderId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-         });
+         const response = await axios.get(
+            `${BASE_URL}/admin/orders/${orderId}`,
+            {
+               headers: { Authorization: `Bearer ${token}` },
+            },
+         );
 
          console.log("Order details response:", response.data); // Debug log
          setSelectedOrder(response.data.data || response.data); // Handle both formats
@@ -379,7 +457,7 @@ export default function OrderManagementPage() {
                                     </div>
                                     <div className="text-sm text-gray-500">
                                        {new Date(
-                                          order.createdAt
+                                          order.createdAt,
                                        ).toLocaleDateString("en-IN", {
                                           year: "numeric",
                                           month: "short",
@@ -432,37 +510,129 @@ export default function OrderManagementPage() {
                                        onChange={(e) =>
                                           handleStatusChange(
                                              order._id,
-                                             e.target.value
+                                             e.target.value,
                                           )
                                        }
                                        className={`text-xs font-medium px-2 py-1 rounded-full border-0 ${getStatusColor(
-                                          order.orderStatus
+                                          order.orderStatus,
                                        )}`}
                                     >
-                                       {statusOptions.map((status) => (
+                                       {(order.orderSource === "in-house"
+                                          ? inhouseStatusOptions
+                                          : onlineStatusOptions
+                                       ).map((status) => (
+                                          <option key={status} value={status}>
+                                             {getDisplayStatus(
+                                                status,
+                                                order.orderSource,
+                                             )}
+                                          </option>
+                                       ))}
+                                       {/* {statusOptions.map((status) => (
                                           <option key={status} value={status}>
                                              {status
                                                 .replace("-", " ")
                                                 .toUpperCase()}
                                           </option>
-                                       ))}
+                                       ))} */}
                                     </select>
                                     <div
                                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(
-                                          order.paymentStatus
+                                          order.paymentStatus,
                                        )}`}
                                     >
                                        {order.paymentStatus?.toUpperCase()}
                                     </div>
                                  </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                  <button
                                     onClick={() => handleViewDetails(order._id)}
                                     className="text-blue-600 hover:text-blue-900 mr-3"
                                  >
                                     View Details
                                  </button>
+                              </td> */}
+
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                 <div className="flex flex-col gap-2">
+                                    <button
+                                       onClick={() =>
+                                          handleViewDetails(order._id)
+                                       }
+                                       className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                                    >
+                                       <Eye size={14} /> View Details
+                                    </button>
+
+                                    {/* IN-HOUSE SPECIFIC ACTIONS */}
+                                    {order.orderSource === "in-house" && (
+                                       <div className="flex flex-col gap-1 border-t pt-2 mt-1">
+                                          {/* 1. Billing Button */}
+                                          {!order.billGenerated ? (
+                                             <button
+                                                disabled={isGenerating}
+                                                onClick={() =>
+                                                   generateBill(order._id)
+                                                }
+                                                className="bg-orange-500 text-white px-2 py-1 rounded text-[10px] flex items-center gap-1 justify-center"
+                                             >
+                                                <Receipt size={12} /> GENERATE
+                                                BILL
+                                             </button>
+                                          ) : (
+                                             <button
+                                                onClick={() => {
+                                                   setSelectedOrder(order);
+                                                   // Small timeout to let state update before printing
+                                                   setTimeout(() => {
+                                                      handlePrint();
+                                                   }, 150);
+                                                }}
+                                                className="bg-indigo-600 text-white px-2 py-1 rounded text-[10px] flex items-center gap-1 justify-center"
+                                             >
+                                                <Printer size={12} /> PRINT BILL
+                                             </button>
+                                          )}
+
+                                          {/* 2. Payment Buttons - Only show if not completed */}
+                                          {order.orderSource === "in-house" &&
+                                             order.paymentStatus !==
+                                                "completed" && (
+                                                <div className="grid grid-cols-2 gap-1 mt-1">
+                                                   <button
+                                                      onClick={() =>
+                                                         handleCompletePayment(
+                                                            order._id,
+                                                            "cash",
+                                                         )
+                                                      }
+                                                      className="bg-green-600 text-white px-1 py-1 rounded text-[10px] hover:bg-green-700"
+                                                   >
+                                                      CASH
+                                                   </button>
+                                                   <button
+                                                      onClick={() =>
+                                                         handleCompletePayment(
+                                                            order._id,
+                                                            "upi",
+                                                         )
+                                                      }
+                                                      className="bg-blue-600 text-white px-1 py-1 rounded text-[10px] hover:bg-blue-700"
+                                                   >
+                                                      UPI
+                                                   </button>
+                                                </div>
+                                             )}
+                                          {order.paymentStatus ===
+                                             "completed" && (
+                                             <span className="text-[10px] text-green-600 font-bold text-center block mt-1">
+                                                ✅ PAID
+                                             </span>
+                                          )}
+                                       </div>
+                                    )}
+                                 </div>
                               </td>
                            </tr>
                         ))}
@@ -535,7 +705,7 @@ export default function OrderManagementPage() {
                            <p>
                               <strong>Order Date:</strong>{" "}
                               {new Date(selectedOrder.createdAt).toLocaleString(
-                                 "en-IN"
+                                 "en-IN",
                               )}
                            </p>
                            <p>
@@ -635,7 +805,7 @@ export default function OrderManagementPage() {
                                  .sort(
                                     (a, b) =>
                                        new Date(b.timestamp) -
-                                       new Date(a.timestamp)
+                                       new Date(a.timestamp),
                                  )
                                  .map((status, index) => (
                                     <div
@@ -647,7 +817,7 @@ export default function OrderManagementPage() {
                                        </span>
                                        <span className="text-gray-500">
                                           {new Date(
-                                             status.timestamp
+                                             status.timestamp,
                                           ).toLocaleString("en-IN")}
                                        </span>
                                     </div>
@@ -658,6 +828,11 @@ export default function OrderManagementPage() {
                </div>
             </div>
          )}
+         <div className="hidden shadow-none pointer-events-none">
+            <div className="block">
+               <PrintableBill ref={componentRef} order={selectedOrder} />
+            </div>
+         </div>
       </div>
    );
 }

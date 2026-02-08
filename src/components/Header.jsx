@@ -67,7 +67,7 @@ export default function Header() {
       { to: "/about", label: "About" },
       { to: "/howitworks", label: "How it works" },
       { to: "/bookus", label: "Book Us" },
-      { to: "/contact", label: "Contact" },
+      // { to: "/contact", label: "Contact" },
    ];
 
    const handleGetStarted = async () => {
@@ -108,7 +108,7 @@ export default function Header() {
             {" "}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                <div className="flex items-center justify-between h-16 md:h-20">
-                  <div className="text-xl md:text-2xl font-bold">
+                  <div className="text-xl md:text-2xl font-bold ">
                      <span className="text-red-500">Love</span>
                      <span className="text-green-700">@firstbyte</span>
                   </div>
@@ -123,8 +123,8 @@ export default function Header() {
       <header
          className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
             isScrolled
-               ? "bg-white/95 backdrop-blur-md shadow-lg"
-               : "bg-white/10 backdrop-blur-md"
+               ? "bg-white/5 backdrop-blur-md shadow-lg  text-amber-500"
+               : "bg-transparent transition duration-500 text-gray-300"
          }`}
       >
          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -132,21 +132,21 @@ export default function Header() {
                {/* Logo */}
                <Link to="/">
                   <motion.div
-                     className="flex items-center space-x-2"
+                     className="flex items-center space-x-2  font-signature"
                      initial={{ opacity: 0, x: -20 }}
                      animate={{ opacity: 1, x: 0 }}
                      transition={{ duration: 0.5 }}
                   >
                      <div className="text-2xl md:text-3xl">💝</div>
-                     <div className="text-xl md:text-2xl font-bold">
-                        <span className="text-red-500">Love</span>
-                        <span className="text-green-700">@firstbyte</span>
+                     <div className="text-xl md:text-4xl font-bold">
+                        <span className="text-amber-500">Love</span>
+                        <span className="text-red-500">@firstbyte</span>
                      </div>
                   </motion.div>
                </Link>
 
                {/* Desktop Navigation */}
-               <nav className="hidden lg:flex items-center space-x-8">
+               <nav className="hidden lg:flex items-center space-x-8 ">
                   {navItems.map((item, index) => (
                      <motion.div
                         key={item.to}
@@ -157,7 +157,7 @@ export default function Header() {
                      >
                         <Link
                            to={item.to}
-                           className="text-black hover:text-red-500 font-medium text-sm uppercase tracking-wide transition-colors duration-200"
+                           className="font-signature hover:text-red-600 font-bold text-lg  tracking-wide transition-colors duration-200"
                         >
                            {item.label}
                         </Link>
@@ -189,10 +189,12 @@ export default function Header() {
                )} */}
 
                {/* Auth State Display */}
-               {isAuthenticated && user ? (
-                  <div className="flex items-center gap-1 md:gap-4 relative">
-                     {/* Profile Image */}
-                     {user.picture ? (
+
+               {/* COMMENTED OUT LOGIN FNLTY AS OF NOW*/}
+               {/* {isAuthenticated && user ? (
+                  <div className="flex items-center gap-1 md:gap-4 relative"> */}
+               {/* Profile Image */}
+               {/* {user.picture ? (
                         <div className="flex items-center gap-2">
                            <span className="text-sm text-black">
                               {user.name}
@@ -207,10 +209,10 @@ export default function Header() {
                         <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs md:text-sm">
                            {user.name?.charAt(0) || "U"}
                         </div>
-                     )}
+                     )} */}
 
-                     {/* Dropdown Trigger */}
-                     <button
+               {/* Dropdown Trigger */}
+               {/* <button
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         className="p-1 hover:bg-indigo-100 rounded-full"
                      >
@@ -229,10 +231,10 @@ export default function Header() {
                               d="M19 9l-7 7-7-7"
                            />
                         </svg>
-                     </button>
+                     </button> */}
 
-                     {/* Dropdown Menu */}
-                     {isDropdownOpen && (
+               {/* Dropdown Menu */}
+               {/* {isDropdownOpen && (
                         <div
                            ref={dropdownRef}
                            className="absolute right-0 top-full mt-1 md:mt-2 w-64 md:w-80 bg-white rounded-lg shadow-lg border border-indigo-100 py-2 z-50"
@@ -267,8 +269,8 @@ export default function Header() {
                         </div>
                      )}
                   </div>
-               ) : (
-                  <div className="flex items-center space-x-4">
+               ) : ( */}
+               {/* <div className="flex items-center space-x-4">
                      <Button
                         onClick={() => {
                            console.log("🎯 Order Now clicked");
@@ -288,10 +290,10 @@ export default function Header() {
                            <Heart className="w-4 h-4" />
                            <span>{isLoading ? "Loading..." : "Order Now"}</span>
                         </motion.div>
-                     </Button>
+                     </Button> */}
 
-                     {/* Mobile Menu Button */}
-                     <button
+               {/* Mobile Menu Button */}
+               {/* <button
                         className="lg:hidden p-2 rounded-md text-gray-700 hover:text-red-500 transition-colors"
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                      >
@@ -302,7 +304,7 @@ export default function Header() {
                         )}
                      </button>
                   </div>
-               )}
+               )} */}
             </div>
          </div>
 
@@ -326,7 +328,7 @@ export default function Header() {
                         >
                            <Link
                               to={item.to}
-                              className="block text-gray-700 hover:text-red-500 font-medium text-sm uppercase tracking-wide transition-colors duration-200"
+                              className="block font-signature hover:text-red-600 font-bold text-lg  tracking-wide transition-colors duration-200"
                               onClick={() => setIsMenuOpen(false)}
                            >
                               {item.label}
