@@ -20,15 +20,15 @@ const ClientProvider = ({ children }) => {
       if (process.env.NODE_ENV === "development") {
          const interval = setInterval(() => {
             const state = store.getState();
-            console.log("📊 Redux State:", {
-               auth: state.auth,
-               firebase: state.firebase,
-               cart: state.cart,
-               hasLocalStorageToken:
-                  typeof window !== "undefined"
-                     ? !!localStorage.getItem("firebaseToken")
-                     : "N/A",
-            });
+            // console.log("📊 Redux State:", {
+            //    auth: state.auth,
+            //    firebase: state.firebase,
+            //    cart: state.cart,
+            //    hasLocalStorageToken:
+            //       typeof window !== "undefined"
+            //          ? !!localStorage.getItem("firebaseToken")
+            //          : "N/A",
+            // });
          }, 3000);
 
          return () => clearInterval(interval);

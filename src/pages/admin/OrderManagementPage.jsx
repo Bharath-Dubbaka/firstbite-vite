@@ -8,6 +8,58 @@ import { toast } from "sonner";
 import { Receipt, Printer, CreditCard, Eye } from "lucide-react";
 import { PrintableBill } from "./PrintableBill";
 
+const OrderTimeline = ({ order }) => {
+   // Combine order-level and item-level events
+   const events = [
+      ...order.statusHistory.map((h) => ({
+         type: h.status.startsWith("item_") ? "item" : "order",
+         status: h.status.replace("item_", ""),
+         timestamp: h.timestamp,
+         note: h.note,
+      })),
+   ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+   return (
+      <div className="mt-4 border-t pt-4">
+         <h4 className="font-semibold mb-3 text-sm">Activity Timeline</h4>
+         <div className="space-y-2 max-h-60 overflow-y-auto">
+            {/* {console.log(events, "EVENTs ")} */}
+            {events.map((event, idx) => (
+               <div
+                  key={idx}
+                  className="flex gap-3 text-xs border-l-2 border-gray-300 pl-3 py-1"
+               >
+                  <div className="flex-1">
+                     <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                           event.type === "item"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-gray-100 text-gray-700"
+                        }`}
+                     >
+                        {event.type === "item" ? "ITEM" : "ORDER"}
+                     </span>
+                     <span className="ml-2 capitalize">
+                        {event.status.replace("-", " ")}
+                     </span>
+                     {event.note && (
+                        <p className="text-gray-500 mt-0.5">{event.note}</p>
+                     )}
+                  </div>
+                  <span className="text-gray-400 text-[10px] whitespace-nowrap">
+                     {new Date(event.timestamp).toLocaleString("en-IN", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                     })}
+                  </span>
+               </div>
+            ))}
+         </div>
+      </div>
+   );
+};
+
 export default function OrderManagementPage() {
    const [orders, setOrders] = useState([]);
    const [filteredOrders, setFilteredOrders] = useState([]);
@@ -51,15 +103,107 @@ export default function OrderManagementPage() {
       contentRef: componentRef,
    });
 
+   // Helper function  Smart Action Buttons
+   const getOrderActions = (order) => {
+      // ✅ CRITICAL FIX: Check payment status FIRST
+      if (order.paymentStatus === "completed") {
+         return {
+            message: "✅ Paid & Closed",
+            canGenerateBill: false,
+            canPrint: true,
+            canPay: false,
+         };
+      }
+
+      // ✅ FIX: For in-house orders
+      if (order.orderSource === "in-house") {
+         const allItemsServed = order.items?.every(
+            (i) => i.status === "served",
+         );
+         const hasPendingItems = order.items?.some(
+            (i) => i.status === "pending",
+         );
+
+         // Case 1: Has pending items (new items added after billing)
+         if (hasPendingItems) {
+            return {
+               message: "⚠️ New items pending - serve before billing",
+               canGenerateBill: false,
+               canPrint: false,
+               canPay: false,
+            };
+         }
+
+         // Case 2: Not all items served yet
+         if (!allItemsServed) {
+            return {
+               message: "⚠️ All items must be served before billing",
+               canGenerateBill: false,
+               canPrint: false,
+               canPay: false,
+            };
+         }
+
+         // Case 3: All served, bill not generated OR bill needs regeneration
+         if (
+            allItemsServed &&
+            (!order.billGenerated || order.orderStatus !== "billing")
+         ) {
+            return {
+               message: "✅ Ready to generate bill",
+               canGenerateBill: true,
+               canPrint: false,
+               canPay: false,
+               nextStep: "Generate bill first",
+            };
+         }
+
+         // Case 4: Bill generated (status is "billing")
+         if (order.orderStatus === "billing" && order.billGenerated) {
+            return {
+               message: "✅ Bill generated - Print and collect payment",
+               canGenerateBill: true, // Allow regeneration
+               canPrint: true,
+               canPay: true,
+               nextStep: "Print bill, then accept payment",
+            };
+         }
+
+         // Case 5: Served but somehow not in billing
+         if (allItemsServed) {
+            return {
+               message: "✅ Ready for billing",
+               canGenerateBill: true,
+               canPrint: false,
+               canPay: false,
+            };
+         }
+      }
+
+      // Default fallback
+      return {
+         message: "",
+         canGenerateBill: false,
+         canPrint: false,
+         canPay: false,
+      };
+   };
+
    // Helper to make the UI look nice while keeping DB values clean
    const getDisplayStatus = (status, source) => {
       if (source === "in-house") {
-         if (status === "ready") return "READY TO SERVE";
-         if (status === "served") return "SERVED";
-         if (status === "billing") return "BILLING / PRINTED"; // Add this
-         if (status === "completed") return "PAID & CLOSED";
+         const statusMap = {
+            confirmed: "CONFIRMED",
+            preparing: "PREPARING",
+            ready: "READY TO SERVE",
+            served: "SERVED",
+            billing: "BILLING", // ✅ Fixed
+            completed: "PAID & CLOSED",
+            cancelled: "CANCELLED",
+         };
+         return statusMap[status] || status.toUpperCase();
       }
-      return status.toUpperCase();
+      return status.toUpperCase().replace("-", " ");
    };
 
    const generateBill = async (orderId) => {
@@ -217,6 +361,86 @@ export default function OrderManagementPage() {
       } catch (err) {
          setError("Failed to update order status.");
          console.error("Status update error:", err);
+      }
+   };
+
+   const handleItemStatusChange = async (orderId, itemId, newStatus) => {
+      try {
+         const token = localStorage.getItem("adminToken");
+         await axios.put(
+            `${BASE_URL}/admin/inhouse/orders/${orderId}/items/${itemId}/status`,
+            { status: newStatus },
+            { headers: { Authorization: `Bearer ${token}` } },
+         );
+
+         toast.success(`Item marked as ${newStatus}`);
+
+         // Refresh order details
+         handleViewDetails(orderId);
+
+         // Refresh orders list
+         fetchOrders();
+      } catch (err) {
+         toast.error("Failed to update item status");
+         console.error(err);
+      }
+   };
+
+   const handleMarkAllItemsReady = async (orderId) => {
+      try {
+         const token = localStorage.getItem("adminToken");
+         await axios.put(
+            `${BASE_URL}/admin/inhouse/orders/${orderId}/mark-all-ready`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } },
+         );
+
+         toast.success("All items marked as ready");
+
+         // Refresh order details
+         handleViewDetails(orderId);
+
+         // Refresh orders list
+         fetchOrders();
+      } catch (err) {
+         toast.error("Failed to mark items as ready");
+         console.error(err);
+      }
+   };
+
+   const handleMarkAllItemsServed = async (orderId) => {
+      try {
+         const token = localStorage.getItem("adminToken");
+
+         // Get current order
+         const response = await axios.get(
+            `${BASE_URL}/admin/orders/${orderId}`,
+            { headers: { Authorization: `Bearer ${token}` } },
+         );
+
+         const order = response.data.data || response.data;
+
+         // Update each item to served
+         for (const item of order.items) {
+            if (item.status !== "served") {
+               await axios.put(
+                  `${BASE_URL}/admin/inhouse/orders/${orderId}/items/${item._id}/status`,
+                  { status: "served" },
+                  { headers: { Authorization: `Bearer ${token}` } },
+               );
+            }
+         }
+
+         toast.success("All items marked as served");
+
+         // Refresh order details
+         handleViewDetails(orderId);
+
+         // Refresh orders list
+         fetchOrders();
+      } catch (err) {
+         toast.error("Failed to mark items as served");
+         console.error(err);
       }
    };
 
@@ -566,72 +790,104 @@ export default function OrderManagementPage() {
                                     </button>
 
                                     {/* IN-HOUSE SPECIFIC ACTIONS */}
-                                    {order.orderSource === "in-house" && (
-                                       <div className="flex flex-col gap-1 border-t pt-2 mt-1">
-                                          {/* 1. Billing Button */}
-                                          {!order.billGenerated ? (
-                                             <button
-                                                disabled={isGenerating}
-                                                onClick={() =>
-                                                   generateBill(order._id)
-                                                }
-                                                className="bg-orange-500 text-white px-2 py-1 rounded text-[10px] flex items-center gap-1 justify-center"
-                                             >
-                                                <Receipt size={12} /> GENERATE
-                                                BILL
-                                             </button>
-                                          ) : (
-                                             <button
-                                                onClick={() => {
-                                                   setSelectedOrder(order);
-                                                   // Small timeout to let state update before printing
-                                                   setTimeout(() => {
-                                                      handlePrint();
-                                                   }, 150);
-                                                }}
-                                                className="bg-indigo-600 text-white px-2 py-1 rounded text-[10px] flex items-center gap-1 justify-center"
-                                             >
-                                                <Printer size={12} /> PRINT BILL
-                                             </button>
-                                          )}
 
-                                          {/* 2. Payment Buttons - Only show if not completed */}
-                                          {order.orderSource === "in-house" &&
-                                             order.paymentStatus !==
-                                                "completed" && (
-                                                <div className="grid grid-cols-2 gap-1 mt-1">
+                                    {/* IN-HOUSE SPECIFIC ACTIONS */}
+                                    {order.orderSource === "in-house" &&
+                                       (() => {
+                                          const actions =
+                                             getOrderActions(order);
+
+                                          return (
+                                             <div className="flex flex-col gap-1 border-t pt-2 mt-1">
+                                                {/* Step indicator */}
+                                                {actions.message && (
+                                                   <div className="text-[10px] text-gray-600 italic mb-1">
+                                                      {actions.message}
+                                                   </div>
+                                                )}
+
+                                                {/* Step 1: Generate Bill */}
+                                                {actions.canGenerateBill && (
                                                    <button
+                                                      disabled={isGenerating}
                                                       onClick={() =>
-                                                         handleCompletePayment(
-                                                            order._id,
-                                                            "cash",
-                                                         )
+                                                         generateBill(order._id)
                                                       }
-                                                      className="bg-green-600 text-white px-1 py-1 rounded text-[10px] hover:bg-green-700"
+                                                      className={`px-2 py-1 rounded text-[10px] flex items-center gap-1 justify-center ${
+                                                         order.billGenerated
+                                                            ? "bg-yellow-500 hover:bg-yellow-600 text-white"
+                                                            : "bg-orange-500 hover:bg-orange-600 text-white"
+                                                      }`}
                                                    >
-                                                      CASH
+                                                      <Receipt size={12} />
+                                                      {order.billGenerated
+                                                         ? "REGENERATE BILL"
+                                                         : "GENERATE BILL"}
                                                    </button>
+                                                )}
+
+                                                {/* Step 2: Print Bill */}
+                                                {actions.canPrint && (
                                                    <button
-                                                      onClick={() =>
-                                                         handleCompletePayment(
-                                                            order._id,
-                                                            "upi",
-                                                         )
-                                                      }
-                                                      className="bg-blue-600 text-white px-1 py-1 rounded text-[10px] hover:bg-blue-700"
+                                                      onClick={() => {
+                                                         setSelectedOrder(
+                                                            order,
+                                                         );
+                                                         setTimeout(
+                                                            () => handlePrint(),
+                                                            150,
+                                                         );
+                                                      }}
+                                                      className="bg-indigo-600 text-white px-2 py-1 rounded text-[10px] flex items-center gap-1 justify-center hover:bg-indigo-700"
                                                    >
-                                                      UPI
+                                                      <Printer size={12} />{" "}
+                                                      PRINT BILL
                                                    </button>
-                                                </div>
-                                             )}
-                                          {order.paymentStatus ===
-                                             "completed" && (
-                                             <span className="text-[10px] text-green-600 font-bold text-center block mt-1">
-                                                ✅ PAID
-                                             </span>
-                                          )}
-                                       </div>
-                                    )}
+                                                )}
+
+                                                {/* Step 3: Payment Buttons - Only if bill is printed */}
+                                                {actions.canPay && (
+                                                   <>
+                                                      <div className="text-[9px] font-bold text-center text-gray-700 mt-1">
+                                                         💰 ACCEPT PAYMENT:
+                                                      </div>
+                                                      <div className="grid grid-cols-2 gap-1">
+                                                         <button
+                                                            onClick={() =>
+                                                               handleCompletePayment(
+                                                                  order._id,
+                                                                  "cash",
+                                                               )
+                                                            }
+                                                            className="bg-green-600 text-white px-1 py-1 rounded text-[10px] hover:bg-green-700 font-bold"
+                                                         >
+                                                            💵 CASH
+                                                         </button>
+                                                         <button
+                                                            onClick={() =>
+                                                               handleCompletePayment(
+                                                                  order._id,
+                                                                  "upi",
+                                                               )
+                                                            }
+                                                            className="bg-blue-600 text-white px-1 py-1 rounded text-[10px] hover:bg-blue-700 font-bold"
+                                                         >
+                                                            📱 UPI
+                                                         </button>
+                                                      </div>
+                                                   </>
+                                                )}
+
+                                                {/* Step 4: Completed */}
+                                                {order.paymentStatus ===
+                                                   "completed" && (
+                                                   <span className="text-[10px] text-green-600 font-bold text-center block mt-1 bg-green-50 py-1 rounded">
+                                                      ✅ PAID & CLOSED
+                                                   </span>
+                                                )}
+                                             </div>
+                                          );
+                                       })()}
                                  </div>
                               </td>
                            </tr>
@@ -738,31 +994,130 @@ export default function OrderManagementPage() {
                      </div>
 
                      {/* Order Items */}
-                     <div>
+                     <div className="md:col-span-2">
                         <h3 className="font-semibold mb-2">Order Items</h3>
-                        <div className="space-y-2 max-h-40 overflow-y-auto">
+                        <div className="space-y-3 max-h-60 overflow-y-auto">
                            {selectedOrder.items?.map((item, index) => (
                               <div
-                                 key={index}
-                                 className="flex justify-between text-sm border-b pb-2"
+                                 key={item._id || index}
+                                 className="flex justify-between items-center border-b pb-3"
                               >
-                                 <div>
-                                    <p className="font-medium">
+                                 <div className="flex-1">
+                                    <p className="font-medium text-sm">
                                        {item.menuItem?.name || "Unknown Item"}
                                     </p>
-                                    <p className="text-gray-500">
-                                       Qty: {item.quantity}
+                                    <p className="text-gray-500 text-xs">
+                                       Qty: {item.quantity} × ₹{item.price} = ₹
+                                       {item.price * item.quantity}
                                     </p>
+                                    {item.specialInstructions && (
+                                       <p className="text-orange-600 text-xs italic mt-1">
+                                          Note: {item.specialInstructions}
+                                       </p>
+                                    )}
                                  </div>
-                                 <div className="text-right">
-                                    <p>₹{item.price} each</p>
-                                    <p className="font-medium">
-                                       ₹{item.price * item.quantity}
-                                    </p>
-                                 </div>
+
+                                 {/* ✅ NEW: Item Status Badge & Controls */}
+                                 {selectedOrder.orderSource === "in-house" && (
+                                    <div className="flex flex-col items-end gap-2 ml-4">
+                                       {/* Status Badge */}
+                                       <span
+                                          className={`px-2 py-1 rounded text-[10px] font-bold ${
+                                             item.status === "served"
+                                                ? "bg-green-100 text-green-800"
+                                                : item.status === "ready"
+                                                  ? "bg-purple-100 text-purple-800"
+                                                  : item.status === "preparing"
+                                                    ? "bg-orange-100 text-orange-800"
+                                                    : "bg-gray-100 text-gray-800"
+                                          }`}
+                                       >
+                                          {item.status?.toUpperCase()}
+                                       </span>
+
+                                       {/* Status Control Buttons */}
+                                       {selectedOrder.paymentStatus !==
+                                          "completed" && (
+                                          <div className="flex gap-1">
+                                             {item.status === "pending" && (
+                                                <button
+                                                   onClick={() =>
+                                                      handleItemStatusChange(
+                                                         selectedOrder._id,
+                                                         item._id,
+                                                         "preparing",
+                                                      )
+                                                   }
+                                                   className="bg-orange-500 text-white px-2 py-1 rounded text-[9px] hover:bg-orange-600"
+                                                >
+                                                   START
+                                                </button>
+                                             )}
+                                             {item.status === "preparing" && (
+                                                <button
+                                                   onClick={() =>
+                                                      handleItemStatusChange(
+                                                         selectedOrder._id,
+                                                         item._id,
+                                                         "ready",
+                                                      )
+                                                   }
+                                                   className="bg-purple-500 text-white px-2 py-1 rounded text-[9px] hover:bg-purple-600"
+                                                >
+                                                   READY
+                                                </button>
+                                             )}
+                                             {item.status === "ready" && (
+                                                <button
+                                                   onClick={() =>
+                                                      handleItemStatusChange(
+                                                         selectedOrder._id,
+                                                         item._id,
+                                                         "served",
+                                                      )
+                                                   }
+                                                   className="bg-green-500 text-white px-2 py-1 rounded text-[9px] hover:bg-green-600"
+                                                >
+                                                   SERVED
+                                                </button>
+                                             )}
+                                          </div>
+                                       )}
+                                    </div>
+                                 )}
                               </div>
                            ))}
                         </div>
+
+                        {/* ✅ NEW: Bulk Actions for In-House */}
+                        {selectedOrder.orderSource === "in-house" &&
+                           selectedOrder.paymentStatus !== "completed" &&
+                           selectedOrder.items?.some(
+                              (i) => i.status !== "served",
+                           ) && (
+                              <div className="mt-3 pt-3 border-t flex gap-2">
+                                 <button
+                                    onClick={() =>
+                                       handleMarkAllItemsReady(
+                                          selectedOrder._id,
+                                       )
+                                    }
+                                    className="bg-purple-600 text-white px-3 py-1 rounded text-xs hover:bg-purple-700"
+                                 >
+                                    Mark All Ready
+                                 </button>
+                                 <button
+                                    onClick={() =>
+                                       handleMarkAllItemsServed(
+                                          selectedOrder._id,
+                                       )
+                                    }
+                                    className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700"
+                                 >
+                                    Mark All Served
+                                 </button>
+                              </div>
+                           )}
                      </div>
                   </div>
 
@@ -825,6 +1180,8 @@ export default function OrderManagementPage() {
                            </div>
                         </div>
                      )}
+
+                  <OrderTimeline order={selectedOrder} />
                </div>
             </div>
          )}

@@ -72,9 +72,9 @@ export default function AdminLayout() {
    }
 
    return (
-      <div className="md:mt-20 flex h-screen bg-gray-100">
+      <div className="md:mt-20 flex h-screen bg-gray-100 font-elegant">
          {/* Sidebar */}
-         <aside className="hidden w-64 bg-indigo-600 text-white md:flex md:flex-col">
+         <aside className="hidden w-48 bg-indigo-600 text-white md:flex md:flex-col">
             <div className="flex flex-col items-center justify-center h-20 border-b border-indigo-500">
                <div className="flex items-center">
                   <Shield className="w-6 h-6 mr-2" />

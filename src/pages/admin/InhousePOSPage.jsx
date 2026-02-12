@@ -1,7 +1,9 @@
+// src/pages/admin/InhousePOSPage.jsx
+
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { BASE_URL } from "../../lib/constants";
-import { ShoppingCart, UserPlus, Trash2, CheckCircle } from "lucide-react";
+import { ShoppingCart, Trash2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "react-router-dom";
 
@@ -42,19 +44,16 @@ export default function InhousePOSPage() {
    const calculateTotal = () =>
       cart.reduce((acc, item) => acc + item.price * item.qty, 0);
 
-   // 2. Add this function to check table status as you type/select
    const checkTableStatus = async (num) => {
       if (!num) return;
       try {
          const token = localStorage.getItem("adminToken");
-         // Get all tables to find the status of this specific one
          const res = await axios.get(`${BASE_URL}/admin/inhouse/tables`, {
             headers: { Authorization: `Bearer ${token}` },
          });
-         const table = res.data.data.find((t) => t.tableNumber === num);
+         const table = res.data.data.find((t) => t.tableNumber == num); // Use == for number/string comparison
 
          if (table && table.status === "occupied" && table.currentOrderId) {
-            // We found an active order!
             setActiveOrderForTable(table.currentOrderId);
          } else {
             setActiveOrderForTable(null);
@@ -65,62 +64,111 @@ export default function InhousePOSPage() {
    };
 
    const submitOrder = async () => {
+      // ✅ Validation FIRST
       if (!tableNumber) return toast.error("Please select a table");
       if (cart.length === 0) return toast.error("Cart is empty");
 
-      const token = localStorage.getItem("adminToken");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
+      // ✅ Define orderPayload BEFORE using it
       const orderPayload = {
-         tableNumber,
+         tableNumber: Number(tableNumber), // Ensure it's a number
          customerName,
-         guestCount,
+         guestCount: Number(guestCount),
          items: cart.map((i) => ({ menuItem: i._id, quantity: i.qty })),
       };
 
+      console.log("🔍 Submitting order:", {
+         tableNumber,
+         activeOrderForTable,
+         orderPayload,
+      });
+
+      const token = localStorage.getItem("adminToken");
+      const config = { headers: { Authorization: `Bearer ${token}` } };
       try {
-         // IF we already know the table is occupied, go straight to ADD ITEMS
          if (activeOrderForTable) {
-            if (
-               window.confirm(
-                  `Table ${tableNumber} is occupied. Add items to current bill?`,
-               )
-            ) {
-               // Using the ID we found earlier (it might be an object or string depending on populate)
-               const id = activeOrderForTable._id || activeOrderForTable;
-               await axios.put(
-                  `${BASE_URL}/admin/inhouse/${id}/add-items`,
+            // ✅ Check if order is in billing status
+            const orderCheck = await axios.get(
+               `${BASE_URL}/admin/orders/${activeOrderForTable._id || activeOrderForTable}`,
+               config,
+            );
+
+            const isBilling = orderCheck.data?.orderStatus === "billing";
+
+            const message = isBilling
+               ? `⚠️ Table ${tableNumber} has a printed bill. Adding items will require bill regeneration. Continue?`
+               : `Table ${tableNumber} is occupied. Add items to current bill?`;
+
+            const confirmed = window.confirm(message);
+
+            if (confirmed) {
+               const orderId = activeOrderForTable._id || activeOrderForTable;
+
+               const response = await axios.put(
+                  `${BASE_URL}/admin/inhouse/orders/${orderId}/add-items`,
                   { items: orderPayload.items },
                   config,
                );
-               toast.success("Items added to existing order!");
+
+               // ✅ Show warning if bill needs regeneration
+               if (response.data.needsBillRegeneration) {
+                  toast.warning(
+                     "Items added! Please regenerate bill before payment.",
+                     { duration: 5000 },
+                  );
+               } else {
+                  toast.success("Items added to existing order!");
+               }
+
                setCart([]);
-               setActiveOrderForTable(null); // Reset
+               setActiveOrderForTable(null);
             }
-            return; // Stop here
+            return;
          }
 
-         // OTHERWISE, try to create a new order (standard flow)
+         // Create new order
          await axios.post(
             `${BASE_URL}/admin/inhouse/orders`,
             orderPayload,
             config,
          );
+
          toast.success("New Order Placed!");
          setCart([]);
+         setTableNumber("");
+         setCustomerName("");
+         setGuestCount(1);
       } catch (err) {
-         // Fallback for safety in case the table became occupied in the last 2 seconds
+         console.error("Order submission error:", err.response?.data || err);
+
          if (
             err.response?.status === 400 &&
             err.response?.data?.existingOrder
          ) {
             const existingId = err.response.data.existingOrder._id;
-            await axios.put(
-               `${BASE_URL}/admin/inhouse/${existingId}/add-items`,
-               { items: orderPayload.items },
-               config,
-            );
-            toast.success("Items added to existing order!");
-            setCart([]);
+
+            try {
+               const response = await axios.put(
+                  `${BASE_URL}/admin/inhouse/orders/${existingId}/add-items`,
+                  { items: orderPayload.items },
+                  config,
+               );
+
+               if (response.data.needsBillRegeneration) {
+                  toast.warning("Items added! Bill needs regeneration.", {
+                     duration: 5000,
+                  });
+               } else {
+                  toast.success("Items added to existing order!");
+               }
+
+               setCart([]);
+               setTableNumber("");
+               setCustomerName("");
+               setGuestCount(1);
+            } catch (addErr) {
+               toast.error("Failed to add items");
+               console.error("Add items error:", addErr);
+            }
          } else {
             toast.error(err.response?.data?.error || "Failed to place order");
          }
@@ -145,11 +193,6 @@ export default function InhousePOSPage() {
                      onClick={() => addToCart(item)}
                      className="border rounded-xl p-3 hover:border-indigo-500 cursor-pointer transition-all active:scale-95"
                   >
-                     <img
-                        src={item.image}
-                        className="w-full h-24 object-cover rounded-lg mb-2"
-                        alt={item.name}
-                     />
                      <h3 className="font-bold text-sm leading-tight h-8">
                         {item.name}
                      </h3>
@@ -176,14 +219,15 @@ export default function InhousePOSPage() {
                         Table
                      </label>
                      <input
+                        type="number"
                         value={tableNumber}
                         onChange={(e) => {
                            const val = e.target.value;
                            setTableNumber(val);
-                           checkTableStatus(val); // Check status as user types
+                           checkTableStatus(val);
                         }}
                         className="w-full border-b focus:border-indigo-600 outline-none p-1"
-                        placeholder="Ex: 21"
+                        placeholder="Ex: 12"
                      />
                   </div>
                   <div className="w-20">

@@ -42,19 +42,26 @@ export default function TableManagementPage() {
       }
    };
 
-   const forceClearTable = async (tableNum) => {
-      if (!window.confirm(`Force clear Table ${tableNum}?`)) return;
+   const forceClearTable = async (tableNumber) => {
+      if (
+         !window.confirm(
+            `Force reset Table ${tableNumber}? This will clear any active order link.`,
+         )
+      ) {
+         return;
+      }
+
       try {
          const token = localStorage.getItem("adminToken");
-         await axios.patch(
-            `${BASE_URL}/admin/inhouse/tables/${tableNum}/status`,
-            { status: "available" },
+         await axios.post(
+            `${BASE_URL}/admin/inhouse/tables/${tableNumber}/force-reset`,
+            {},
             { headers: { Authorization: `Bearer ${token}` } },
          );
-         toast.success("Table Reset");
+         toast.success(`Table ${tableNumber} force reset!`);
          fetchTables();
       } catch (err) {
-         toast.error("Reset failed");
+         toast.error("Force reset failed");
       }
    };
 
