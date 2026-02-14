@@ -66,7 +66,7 @@ export default function TableManagementPage() {
    };
 
    return (
-      <div className="p-6">
+      <div className="p-2 md:p-6">
          <div className="flex justify-between items-end mb-8">
             <div>
                <h1 className="text-3xl font-bold text-gray-800">Floor Plan</h1>

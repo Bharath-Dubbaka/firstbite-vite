@@ -17,7 +17,7 @@ const MenuModal = ({ item, onClose, onSave }) => {
          section: "Quick Bites",
          preparationTime: 10,
          isAvailable: true,
-      }
+      },
    );
 
    const handleChange = (e) => {
@@ -424,7 +424,7 @@ export default function MenuManagementPage() {
             await axios.put(
                `${API_BASE_URL}/${itemData._id}`,
                itemData,
-               config
+               config,
             );
          } else {
             // Create new item
@@ -444,7 +444,7 @@ export default function MenuManagementPage() {
          await axios.patch(
             `${API_BASE_URL}/${item._id}/availability`,
             { isAvailable: !item.isAvailable },
-            { headers: { Authorization: `Bearer ${token}` } }
+            { headers: { Authorization: `Bearer ${token}` } },
          );
          fetchMenuItems(); // Refresh data
       } catch (err) {
@@ -454,18 +454,21 @@ export default function MenuManagementPage() {
 
    return (
       <div>
-         <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">
+         {/* Header Section */}
+         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
                Menu Management
             </h1>
+
             <button
                onClick={() => {
                   setEditingItem(null);
                   setIsModalOpen(true);
                }}
-               className="flex items-center px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700"
+               className="flex items-center justify-center px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 w-full sm:w-auto"
             >
-               <Plus size={20} className="mr-2" /> Add New Item
+               <Plus size={18} className="mr-2" />
+               Add New Item
             </button>
          </div>
 
@@ -481,7 +484,58 @@ export default function MenuManagementPage() {
          {error && <p className="text-red-500">{error}</p>}
 
          <div className="bg-white rounded-lg shadow-md p-4">
-            <div className="overflow-x-auto">
+            {/* ================= MOBILE CARD VIEW ================= */}
+            <div className="space-y-4 md:hidden">
+               {menuItems.map((item) => (
+                  <div
+                     key={item._id}
+                     className="border rounded-lg p-4 shadow-sm bg-gray-50"
+                  >
+                     {/* Top Row */}
+                     <div className="flex justify-between items-start">
+                        <div>
+                           <h2 className="text-lg font-semibold text-gray-800">
+                              {item.name}
+                           </h2>
+                           <p className="text-sm text-gray-500">
+                              {item.category} • {item.section}
+                           </p>
+                        </div>
+
+                        <p className="text-lg font-bold text-indigo-600">
+                           ₹{item.price}
+                        </p>
+                     </div>
+
+                     {/* Availability */}
+                     <div className="mt-3 flex justify-between items-center">
+                        <button
+                           onClick={() => handleToggleAvailability(item)}
+                           className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                              item.isAvailable
+                                 ? "bg-green-100 text-green-800"
+                                 : "bg-red-100 text-red-800"
+                           }`}
+                        >
+                           {item.isAvailable ? "Available" : "Unavailable"}
+                        </button>
+
+                        <button
+                           onClick={() => {
+                              setEditingItem(item);
+                              setIsModalOpen(true);
+                           }}
+                           className="text-indigo-600"
+                        >
+                           <Edit size={18} />
+                        </button>
+                     </div>
+                  </div>
+               ))}
+            </div>
+
+            {/* ================= DESKTOP TABLE VIEW ================= */}
+            <div className="hidden md:block overflow-x-auto">
                <table className="min-w-full">
                   <thead className="bg-gray-50">
                      <tr>
@@ -508,19 +562,19 @@ export default function MenuManagementPage() {
                   <tbody className="bg-white divide-y divide-gray-200">
                      {menuItems.map((item) => (
                         <tr key={item._id}>
-                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                           <td className="px-6 py-4 text-sm font-medium text-gray-900">
                               {item.name}
                            </td>
-                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                           <td className="px-6 py-4 text-sm text-gray-500">
                               ₹{item.price}
                            </td>
-                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                           <td className="px-6 py-4 text-sm text-gray-500">
                               {item.category}
                            </td>
-                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                           <td className="px-6 py-4 text-sm text-gray-500">
                               {item.section}
                            </td>
-                           <td className="px-6 py-4 whitespace-nowrap">
+                           <td className="px-6 py-4">
                               <button
                                  onClick={() => handleToggleAvailability(item)}
                                  className={`px-3 py-1 text-xs font-semibold rounded-full ${
@@ -532,13 +586,13 @@ export default function MenuManagementPage() {
                                  {item.isAvailable ? "Yes" : "No"}
                               </button>
                            </td>
-                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                           <td className="px-6 py-4 text-right">
                               <button
                                  onClick={() => {
                                     setEditingItem(item);
                                     setIsModalOpen(true);
                                  }}
-                                 className="text-indigo-600 hover:text-indigo-900"
+                                 className="text-indigo-600"
                               >
                                  <Edit size={18} />
                               </button>

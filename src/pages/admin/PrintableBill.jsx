@@ -3,6 +3,7 @@ import React from "react";
 
 export const PrintableBill = React.forwardRef(({ order, billData }, ref) => {
    if (!order) return null;
+   console.log("ORDER DATA:", order);
 
    return (
       <div
@@ -10,10 +11,12 @@ export const PrintableBill = React.forwardRef(({ order, billData }, ref) => {
          className="p-8 bg-white text-black font-mono w-[80mm] mx-auto text-sm"
       >
          <div className="text-center mb-4 border-b pb-2">
-            <h2 className="text-xl font-bold uppercase">Love At First Bite</h2>
-            <p className="text-xs">Cafe & Mealbox</p>
-            <p className="text-[10px]">123 Food Street, Hyderabad</p>
-            <p className="text-[10px]">GSTIN: 36ABCDE1234F1Z5</p>
+            <h2 className="text-xl font-bold uppercase">Love At First Byte</h2>
+            <p className="text-xs">Cafe & Restaurant</p>
+            <p className="text-[10px]">
+               HUDA Layout, Nallagandla, Telangana 500019
+            </p>
+            <p className="text-[10px]">GSTIN: 36BTSPP2167F1Z9</p>
          </div>
 
          <div className="mb-4 text-[10px]">

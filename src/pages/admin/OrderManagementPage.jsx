@@ -5,7 +5,7 @@ import axios from "axios";
 import { useReactToPrint } from "react-to-print";
 import { BASE_URL } from "../../lib/constants";
 import { toast } from "sonner";
-import { Receipt, Printer, CreditCard, Eye } from "lucide-react";
+import { Receipt, Printer, CreditCard, Eye, X } from "lucide-react";
 import { PrintableBill } from "./PrintableBill";
 
 const OrderTimeline = ({ order }) => {
@@ -45,7 +45,7 @@ const OrderTimeline = ({ order }) => {
                         <p className="text-gray-500 mt-0.5">{event.note}</p>
                      )}
                   </div>
-                  <span className="text-gray-400 text-[10px] whitespace-nowrap">
+                  <span className="text-gray-400 text-[10px] align-top">
                      {new Date(event.timestamp).toLocaleString("en-IN", {
                         month: "short",
                         day: "numeric",
@@ -76,6 +76,7 @@ export default function OrderManagementPage() {
    const [sortBy, setSortBy] = useState("newest");
    const [isGenerating, setIsGenerating] = useState(false);
    const componentRef = useRef(null);
+   const [showFilters, setShowFilters] = useState(false);
 
    // Define separate options
    const onlineStatusOptions = [
@@ -516,22 +517,24 @@ export default function OrderManagementPage() {
    };
 
    return (
-      <div className="p-6">
-         <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">
-               Order Management
-            </h1>
-            <div className="flex items-center space-x-4">
-               <span className="text-sm text-gray-600">
+      <div className="p-2 md:p-2 lg:p-6">
+         {/* Header */}
+         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+            <div>
+               <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+                  Order Management
+               </h1>
+               <p className="text-sm text-gray-500 mt-1">
                   Total Orders: {filteredOrders.length}
-               </span>
-               <button
-                  onClick={fetchOrders}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-               >
-                  🔄 Refresh
-               </button>
+               </p>
             </div>
+
+            <button
+               onClick={fetchOrders}
+               className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition w-full sm:w-auto"
+            >
+               🔄 Refresh
+            </button>
          </div>
 
          {error && (
@@ -558,22 +561,37 @@ export default function OrderManagementPage() {
                </div>
 
                {/* Status Filter */}
-               <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                     Order Status
-                  </label>
-                  <select
-                     value={statusFilter}
-                     onChange={(e) => setStatusFilter(e.target.value)}
-                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+               {/* Filter Toggle for Mobile */}
+               <div className="md:hidden mb-3">
+                  <button
+                     onClick={() => setShowFilters(!showFilters)}
+                     className="w-full bg-gray-200 py-2 rounded-md text-sm font-medium"
                   >
-                     <option value="all">All Status</option>
-                     {statusOptions.map((status) => (
-                        <option key={status} value={status}>
-                           {status.replace("-", " ").toUpperCase()}
-                        </option>
-                     ))}
-                  </select>
+                     {showFilters ? "Hide Filters" : "Show Filters"}
+                  </button>
+
+                  {/* Filters */}
+                  <div
+                     className={`${showFilters ? "block" : "hidden"} md:block bg-white rounded-lg shadow-md p-6 mb-6`}
+                  >
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                           Order Status
+                        </label>
+                        <select
+                           value={statusFilter}
+                           onChange={(e) => setStatusFilter(e.target.value)}
+                           className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                        >
+                           <option value="all">All Status</option>
+                           {statusOptions.map((status) => (
+                              <option key={status} value={status}>
+                                 {status.replace("-", " ").toUpperCase()}
+                              </option>
+                           ))}
+                        </select>
+                     </div>
+                  </div>
                </div>
 
                {/* Payment Filter */}
@@ -650,23 +668,184 @@ export default function OrderManagementPage() {
             </div>
          ) : (
             <div className="bg-white rounded-lg shadow-md">
-               <div className="overflow-x-auto">
-                  <table className="min-w-full">
-                     <thead className="bg-gray-50">
+               {/* ================= MOBILE CARD VIEW ================= */}
+               <div className="md:hidden divide-y">
+                  {filteredOrders.map((order) => {
+                     const actions = getOrderActions(order);
+
+                     return (
+                        <div key={order._id} className="p-4 space-y-3">
+                           {/* Top Row */}
+                           <div className="flex justify-between items-start">
+                              <div>
+                                 <p className="font-semibold text-gray-900">
+                                    #{order.orderNumber}
+                                 </p>
+                                 <p className="text-xs text-gray-500">
+                                    {new Date(order.createdAt).toLocaleString(
+                                       "en-IN",
+                                    )}
+                                 </p>
+                              </div>
+
+                              <p className="font-bold text-indigo-600">
+                                 ₹{order.finalAmount}
+                              </p>
+                           </div>
+
+                           {/* Customer */}
+                           <div className="text-sm text-gray-600">
+                              {order.userId?.name || "N/A"}
+                           </div>
+
+                           {/* Status + Payment */}
+                           <div className="flex justify-between items-center">
+                              <span
+                                 className={`px-2 py-1 text-xs rounded-full ${getStatusColor(
+                                    order.orderStatus,
+                                 )}`}
+                              >
+                                 {getDisplayStatus(
+                                    order.orderStatus,
+                                    order.orderSource,
+                                 )}
+                              </span>
+
+                              <span
+                                 className={`px-2 py-1 text-xs rounded-full ${getPaymentStatusColor(
+                                    order.paymentStatus,
+                                 )}`}
+                              >
+                                 {order.paymentStatus?.toUpperCase()}
+                              </span>
+                           </div>
+
+                           {/* Actions */}
+                           <div className="flex flex-col gap-2 pt-2 border-t">
+                              <button
+                                 onClick={() => handleViewDetails(order._id)}
+                                 className="bg-gray-100 text-gray-800 py-2 rounded-md text-sm"
+                              >
+                                 👁 View Details
+                              </button>
+
+                              {/* In-house flow */}
+                              {order.orderSource === "in-house" && (
+                                 <>
+                                    {actions.message && (
+                                       <div className="text-[11px] text-gray-500 text-center">
+                                          {actions.message}
+                                       </div>
+                                    )}
+
+                                    {actions.canGenerateBill && (
+                                       <button
+                                          onClick={() =>
+                                             generateBill(order._id)
+                                          }
+                                          className="bg-orange-500 text-white py-2 rounded-md text-sm"
+                                       >
+                                          {order.billGenerated
+                                             ? "Regenerate Bill"
+                                             : "Generate Bill"}
+                                       </button>
+                                    )}
+
+                                    {actions.canPrint && (
+                                       <button
+                                          onClick={async () => {
+                                             try {
+                                                const token =
+                                                   localStorage.getItem(
+                                                      "adminToken",
+                                                   );
+
+                                                // ✅ Use the inhouse route for in-house orders
+                                                const endpoint =
+                                                   order.orderSource ===
+                                                   "in-house"
+                                                      ? `${BASE_URL}/admin/inhouse/orders/${order._id}`
+                                                      : `${BASE_URL}/admin/orders/${order._id}`;
+
+                                                const response =
+                                                   await axios.get(endpoint, {
+                                                      headers: {
+                                                         Authorization: `Bearer ${token}`,
+                                                      },
+                                                   });
+
+                                                setSelectedOrder(
+                                                   response.data.data ||
+                                                      response.data,
+                                                );
+                                                setTimeout(
+                                                   () => handlePrint(),
+                                                   150,
+                                                );
+                                             } catch (err) {
+                                                toast.error(
+                                                   "Failed to load order for printing",
+                                                );
+                                             }
+                                          }}
+                                          className="bg-indigo-600 text-white px-2 py-1 rounded text-[10px] flex items-center gap-1 justify-center hover:bg-indigo-700"
+                                       >
+                                          <Printer size={12} /> PRINT BILL
+                                       </button>
+                                    )}
+
+                                    {actions.canPay && (
+                                       <div className="grid grid-cols-2 gap-2">
+                                          <button
+                                             onClick={() =>
+                                                handleCompletePayment(
+                                                   order._id,
+                                                   "cash",
+                                                )
+                                             }
+                                             className="bg-green-600 text-white py-2 rounded-md text-xs"
+                                          >
+                                             Cash
+                                          </button>
+                                          <button
+                                             onClick={() =>
+                                                handleCompletePayment(
+                                                   order._id,
+                                                   "upi",
+                                                )
+                                             }
+                                             className="bg-blue-600 text-white py-2 rounded-md text-xs"
+                                          >
+                                             UPI
+                                          </button>
+                                       </div>
+                                    )}
+                                 </>
+                              )}
+                           </div>
+                        </div>
+                     );
+                  })}
+               </div>
+
+               {/* ================= DESKTOP TABLE VIEW ================= */}
+               <div className="hidden md:block">
+                  <table className="w-full table-fixed">
+                     <thead className="bg-gray-50 ">
                         <tr>
-                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                           <th className="px-6 py-3 text-left w-[20%] text-xs font-bold text-gray-500 uppercase tracking-wider">
                               Order Details
                            </th>
-                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Customer
+                           <th className="px-6 py-3 text-left  w-[10%] text-xs font-bold text-gray-500 uppercase tracking-wider">
+                              Cus
                            </th>
-                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Items & Amount
+                           <th className="px-6 py-3 text-left  w-[10%] text-xs font-bold text-gray-500 uppercase tracking-wider">
+                              Items & Amt
                            </th>
-                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                           <th className="px-6 py-3 text-left w-[30%] text-xs font-bold text-gray-500 uppercase tracking-wider">
                               Status
                            </th>
-                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                           <th className="px-6 py-3 text-left w-[30%] text-xs font-bold text-gray-500 uppercase tracking-wider">
                               Actions
                            </th>
                         </tr>
@@ -674,7 +853,7 @@ export default function OrderManagementPage() {
                      <tbody className="bg-white divide-y divide-gray-200">
                         {filteredOrders.map((order) => (
                            <tr key={order._id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap">
+                              <td className="px-6 py-4 align-top">
                                  <div>
                                     <div className="text-sm font-medium text-gray-900">
                                        #{order.orderNumber}
@@ -697,7 +876,7 @@ export default function OrderManagementPage() {
                                     </div>
                                  </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
+                              <td className="px-6 py-4 align-top">
                                  <div>
                                     <div className="text-sm font-medium text-gray-900">
                                        {order.userId?.name || "N/A"}
@@ -711,9 +890,9 @@ export default function OrderManagementPage() {
                                     </div>
                                  </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
+                              <td className="px-6 py-4 align-top">
                                  <div>
-                                    <div className="text-sm font-medium text-gray-900">
+                                    <div className="text-sm font-medium text-gray-900 ">
                                        ₹{order.finalAmount}
                                     </div>
                                     <div className="text-sm text-gray-500">
@@ -727,9 +906,10 @@ export default function OrderManagementPage() {
                                     )}
                                  </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
+                              <td className="px-6 py-4 align-top">
                                  <div className="space-y-2">
-                                    <select
+                                    {/* with dropdown to change status for in-house orders   */}
+                                    {/* <select
                                        value={order.orderStatus}
                                        onChange={(e) =>
                                           handleStatusChange(
@@ -752,14 +932,17 @@ export default function OrderManagementPage() {
                                              )}
                                           </option>
                                        ))}
-                                       {/* {statusOptions.map((status) => (
-                                          <option key={status} value={status}>
-                                             {status
-                                                .replace("-", " ")
-                                                .toUpperCase()}
-                                          </option>
-                                       ))} */}
-                                    </select>
+
+                                    </select> */}
+                                    {/* Display-only status badge - NO dropdown */}
+                                    <span
+                                       className={`text-xs font-medium px-2 py-1 rounded-full inline-block ${getStatusColor(order.orderStatus)}`}
+                                    >
+                                       {getDisplayStatus(
+                                          order.orderStatus,
+                                          order.orderSource,
+                                       )}
+                                    </span>
                                     <div
                                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(
                                           order.paymentStatus,
@@ -778,7 +961,7 @@ export default function OrderManagementPage() {
                                  </button>
                               </td> */}
 
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <td className="px-6 py-4 align-top text-sm font-medium">
                                  <div className="flex flex-col gap-2">
                                     <button
                                        onClick={() =>
@@ -829,14 +1012,45 @@ export default function OrderManagementPage() {
                                                 {/* Step 2: Print Bill */}
                                                 {actions.canPrint && (
                                                    <button
-                                                      onClick={() => {
-                                                         setSelectedOrder(
-                                                            order,
-                                                         );
-                                                         setTimeout(
-                                                            () => handlePrint(),
-                                                            150,
-                                                         );
+                                                      onClick={async () => {
+                                                         try {
+                                                            const token =
+                                                               localStorage.getItem(
+                                                                  "adminToken",
+                                                               );
+
+                                                            // ✅ Use the inhouse route for in-house orders
+                                                            const endpoint =
+                                                               order.orderSource ===
+                                                               "in-house"
+                                                                  ? `${BASE_URL}/admin/inhouse/orders/${order._id}`
+                                                                  : `${BASE_URL}/admin/orders/${order._id}`;
+
+                                                            const response =
+                                                               await axios.get(
+                                                                  endpoint,
+                                                                  {
+                                                                     headers: {
+                                                                        Authorization: `Bearer ${token}`,
+                                                                     },
+                                                                  },
+                                                               );
+
+                                                            setSelectedOrder(
+                                                               response.data
+                                                                  .data ||
+                                                                  response.data,
+                                                            );
+                                                            setTimeout(
+                                                               () =>
+                                                                  handlePrint(),
+                                                               150,
+                                                            );
+                                                         } catch (err) {
+                                                            toast.error(
+                                                               "Failed to load order for printing",
+                                                            );
+                                                         }
                                                       }}
                                                       className="bg-indigo-600 text-white px-2 py-1 rounded text-[10px] flex items-center gap-1 justify-center hover:bg-indigo-700"
                                                    >
@@ -924,9 +1138,9 @@ export default function OrderManagementPage() {
                      </h2>
                      <button
                         onClick={() => setShowModal(false)}
-                        className="text-gray-500 hover:text-gray-700 text-2xl"
+                        className="absolute top-3 right-3 md:right-1/4 bg-white rounded-full  border border-red-600 shadow-md p-2 hover:bg-red-100 transition"
                      >
-                        ×
+                        <X size={20} />
                      </button>
                   </div>
 
