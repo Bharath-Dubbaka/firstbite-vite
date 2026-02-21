@@ -65,7 +65,8 @@ export default function Header() {
    const navItems = [
       { to: "/", label: "Home" },
       { to: "/about", label: "About" },
-      { to: "/howitworks", label: "How it works" },
+      { to: "/howitworks", label: "Menu" },
+      // { to: "/howitworks", label: "How it works" },
       { to: "/bookus", label: "Book Us" },
       // { to: "/contact", label: "Contact" },
    ];
@@ -123,30 +124,32 @@ export default function Header() {
       <header
          className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
             isScrolled
-               ? "bg-white/5 backdrop-blur-md shadow-lg  text-amber-500"
-               : "bg-transparent transition duration-500 text-gray-300"
+               ? "bg-white/5 backdrop-blur-md shadow-lg text-black "
+               : "bg-transparent transition duration-500 text-amber-400"
          }`}
       >
          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16 md:h-20">
+            <div className="flex items-center justify-between h-16 md:h-24">
                {/* Logo */}
                <Link to="/">
                   <motion.div
-                     className="flex items-center space-x-2  font-signature"
+                     className="flex items-center group py-2" // Added py-2 for vertical padding
                      initial={{ opacity: 0, x: -20 }}
                      animate={{ opacity: 1, x: 0 }}
                      transition={{ duration: 0.5 }}
+                     whileHover={{ scale: 1.05 }}
                   >
-                     <div className="text-2xl md:text-3xl">💝</div>
-                     <div className="text-xl md:text-4xl font-bold">
-                        <span className="text-amber-500">Love</span>
-                        <span className="text-red-500">@firstbyte</span>
-                     </div>
+                     <img
+                        src="/lafbVector.svg"
+                        alt="Love At First Byte Logo"
+                        className="h-14 md:h-20 mt-2 w-auto object-contain group-hover:scale-110 transition-all duration-300 drop-shadow-lg"
+                        // Changed: h-14 to h-18, w-14 to w-auto (so width adjusts to maintain aspect ratio)
+                     />
                   </motion.div>
                </Link>
 
                {/* Desktop Navigation */}
-               <nav className="hidden lg:flex items-center space-x-8 ">
+               <nav className="hidden lg:flex items-center space-x-8">
                   {navItems.map((item, index) => (
                      <motion.div
                         key={item.to}
@@ -157,7 +160,7 @@ export default function Header() {
                      >
                         <Link
                            to={item.to}
-                           className="font-signature hover:text-red-600 font-bold text-lg  tracking-wide transition-colors duration-200"
+                           className="font-signature hover:text-red-600 font-bold text-xl  tracking-wide transition-colors duration-200"
                         >
                            {item.label}
                         </Link>

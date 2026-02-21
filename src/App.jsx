@@ -26,6 +26,7 @@ import AdminOrders from "./pages/admin/OrderManagementPage";
 import TableManagementPage from "./pages/admin/TableManagementPage";
 import InhousePOSPage from "./pages/admin/InhousePOSPage";
 import KitchenDisplayPage from "./pages/admin/KitchenDisplayPage";
+import TaxConfigPage from "./pages/admin/TaxConfigPage";
 
 // This layout includes the Header and Footer for all public-facing pages
 const MainLayout = () => (
@@ -64,6 +65,7 @@ function App() {
                <Route path="tables" element={<TableManagementPage />} />
                <Route path="pos" element={<InhousePOSPage />} />
                <Route path="kitchen" element={<KitchenDisplayPage />} />
+               <Route path="tax-config" element={<TaxConfigPage />} />
             </Route>
          </Routes>
       </BrowserRouter>

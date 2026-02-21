@@ -42,7 +42,7 @@ export default function Footer() {
    const quickLinks = [
       { href: "/", label: "Home" },
       { href: "/cafe-menu", label: "Café Menu" },
-      { href: "/dabba-plans", label: "Dabba Plans" },
+      // { href: "/dabba-plans", label: "Dabba Plans" },
       { href: "/about", label: "About Us" },
       { href: "/contact", label: "Contact" },
    ];
@@ -53,11 +53,11 @@ export default function Footer() {
          name: "Café Service",
          desc: "Fresh coffee & snacks",
       },
-      {
-         icon: <UtensilsCrossedIcon className="w-5 h-5" />,
-         name: "Dabba Service",
-         desc: "Daily meal plans",
-      },
+      // {
+      //    icon: <UtensilsCrossedIcon className="w-5 h-5" />,
+      //    name: "Dabba Service",
+      //    desc: "Daily meal plans",
+      // },
       {
          icon: <Users className="w-5 h-5" />,
          name: "Catering",
@@ -94,10 +94,17 @@ export default function Footer() {
                      whileInView={{ opacity: 1, y: 0 }}
                      transition={{ duration: 0.6 }}
                   >
-                     <div className="text-3xl">💝</div>
+                     <div className="text-3xl">
+                        <img
+                           src="/lafbVector.svg"
+                           alt="Love At First Byte Logo"
+                           className="h-14 md:h-20 mt-2 w-auto object-contain group-hover:scale-110 transition-all duration-300 drop-shadow-lg"
+                           // Changed: h-14 to h-18, w-14 to w-auto (so width adjusts to maintain aspect ratio)
+                        />
+                     </div>
                      <div className="text-xl font-bold">
-                        <span className="text-red-400">Love</span>
-                        <span className="text-green-400">@firstbyte</span>
+                        <span className="text-red-400">Love at</span>
+                        <span className="text-green-400">firstbyte</span>
                      </div>
                   </motion.div>
 
