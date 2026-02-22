@@ -82,6 +82,12 @@ export default function AdminLayout() {
 
                   {/* Desktop Nav */}
                   <nav className="hidden md:flex items-center space-x-1">
+                     <NavLink
+                        to="/admin/dashboard"
+                        icon={<LayoutDashboard size={18} />}
+                     >
+                        Dashboard
+                     </NavLink>
                      <NavLink to="/admin/menu" icon={<Utensils size={18} />}>
                         Menu
                      </NavLink>
@@ -129,6 +135,13 @@ export default function AdminLayout() {
             {/* ✅ Mobile Dropdown */}
             {mobileOpen && (
                <div className="md:hidden bg-indigo-500 px-2 py-2 space-y-1">
+                  <NavLink
+                     to="/admin/dashboard"
+                     icon={<LayoutDashboard size={18} />}
+                     onClick={() => setMobileOpen(false)}
+                  >
+                     Dashboard
+                  </NavLink>
                   <NavLink
                      to="/admin/menu"
                      icon={<Utensils size={18} />}

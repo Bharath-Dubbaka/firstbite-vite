@@ -60,6 +60,7 @@ function App() {
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
                {/* <Route path="dashboard" element={<AdminDashboard />} /> */}
+               <Route path="dashboard" element={<AdminDashboard />} />
                <Route path="menu" element={<AdminMenu />} />
                <Route path="orders" element={<AdminOrders />} />
                <Route path="tables" element={<TableManagementPage />} />

@@ -20,13 +20,18 @@ const OrderTimeline = ({ order }) => {
    ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
    return (
       <div className="mt-4 border-t pt-4">
-         <h4 className="font-semibold mb-3 text-sm">Activity Timeline</h4>
+         <h4
+            className="font-semibold mb-3 text-md
+         "
+         >
+            Activity Timeline
+         </h4>
          <div className="space-y-2 max-h-60 overflow-y-auto">
             {/* {console.log(events, "EVENTs ")} */}
             {events.map((event, idx) => (
                <div
                   key={idx}
-                  className="flex gap-3 text-xs border-l-2 border-gray-300 pl-3 py-1"
+                  className="flex gap-3 text-sm border-l-2 border-gray-300 pl-3 py-1"
                >
                   <div className="flex-1">
                      <span
@@ -524,7 +529,10 @@ export default function OrderManagementPage() {
                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
                   Order Management
                </h1>
-               <p className="text-sm text-gray-500 mt-1">
+               <p
+                  className="text-md
+                text-gray-500 mt-1"
+               >
                   Total Orders: {filteredOrders.length}
                </p>
             </div>
@@ -548,7 +556,10 @@ export default function OrderManagementPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
                {/* Search */}
                <div className="lg:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                     className="block text-md
+                   font-medium text-gray-700 mb-2"
+                  >
                      Search Orders
                   </label>
                   <input
@@ -565,7 +576,8 @@ export default function OrderManagementPage() {
                <div className="md:hidden mb-3">
                   <button
                      onClick={() => setShowFilters(!showFilters)}
-                     className="w-full bg-gray-200 py-2 rounded-md text-sm font-medium"
+                     className="w-full bg-gray-200 py-2 rounded-md text-md
+                      font-medium"
                   >
                      {showFilters ? "Hide Filters" : "Show Filters"}
                   </button>
@@ -575,7 +587,10 @@ export default function OrderManagementPage() {
                      className={`${showFilters ? "block" : "hidden"} md:block bg-white rounded-lg shadow-md p-6 mb-6`}
                   >
                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                           className="block text-md
+                         font-medium text-gray-700 mb-2"
+                        >
                            Order Status
                         </label>
                         <select
@@ -596,7 +611,10 @@ export default function OrderManagementPage() {
 
                {/* Payment Filter */}
                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                     className="block text-md
+                   font-medium text-gray-700 mb-2"
+                  >
                      Payment Status
                   </label>
                   <select
@@ -616,7 +634,10 @@ export default function OrderManagementPage() {
 
                {/* Date Filter */}
                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                     className="block text-md
+                   font-medium text-gray-700 mb-2"
+                  >
                      Date Range
                   </label>
                   <select
@@ -634,7 +655,10 @@ export default function OrderManagementPage() {
 
                {/* Sort */}
                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                     className="block text-md
+                   font-medium text-gray-700 mb-2"
+                  >
                      Sort By
                   </label>
                   <select
@@ -654,7 +678,8 @@ export default function OrderManagementPage() {
             <div className="mt-4 flex justify-end">
                <button
                   onClick={clearFilters}
-                  className="text-gray-600 hover:text-gray-800 text-sm underline"
+                  className="text-gray-600 hover:text-gray-800 text-md
+                   underline"
                >
                   Clear All Filters
                </button>
@@ -681,7 +706,7 @@ export default function OrderManagementPage() {
                                  <p className="font-semibold text-gray-900">
                                     #{order.orderNumber}
                                  </p>
-                                 <p className="text-xs text-gray-500">
+                                 <p className="text-sm text-gray-500">
                                     {new Date(order.createdAt).toLocaleString(
                                        "en-IN",
                                     )}
@@ -694,14 +719,17 @@ export default function OrderManagementPage() {
                            </div>
 
                            {/* Customer */}
-                           <div className="text-sm text-gray-600">
+                           <div
+                              className="text-md
+                            text-gray-600"
+                           >
                               {order.userId?.name || "N/A"}
                            </div>
 
                            {/* Status + Payment */}
                            <div className="flex justify-between items-center">
                               <span
-                                 className={`px-2 py-1 text-xs rounded-full ${getStatusColor(
+                                 className={`px-2 py-1 text-sm rounded-full ${getStatusColor(
                                     order.orderStatus,
                                  )}`}
                               >
@@ -712,7 +740,7 @@ export default function OrderManagementPage() {
                               </span>
 
                               <span
-                                 className={`px-2 py-1 text-xs rounded-full ${getPaymentStatusColor(
+                                 className={`px-2 py-1 text-sm rounded-full ${getPaymentStatusColor(
                                     order.paymentStatus,
                                  )}`}
                               >
@@ -724,7 +752,8 @@ export default function OrderManagementPage() {
                            <div className="flex flex-col gap-2 pt-2 border-t">
                               <button
                                  onClick={() => handleViewDetails(order._id)}
-                                 className="bg-gray-100 text-gray-800 py-2 rounded-md text-sm"
+                                 className="bg-gray-100 text-gray-800 py-2 rounded-md text-md
+                                 "
                               >
                                  👁 View Details
                               </button>
@@ -743,7 +772,8 @@ export default function OrderManagementPage() {
                                           onClick={() =>
                                              generateBill(order._id)
                                           }
-                                          className="bg-orange-500 text-white py-2 rounded-md text-sm"
+                                          className="bg-orange-500 text-white py-2 rounded-md text-md
+                                          "
                                        >
                                           {order.billGenerated
                                              ? "Regenerate Bill"
@@ -803,7 +833,7 @@ export default function OrderManagementPage() {
                                                    "cash",
                                                 )
                                              }
-                                             className="bg-green-600 text-white py-2 rounded-md text-xs"
+                                             className="bg-green-600 text-white py-2 rounded-md text-sm"
                                           >
                                              Cash
                                           </button>
@@ -814,7 +844,7 @@ export default function OrderManagementPage() {
                                                    "upi",
                                                 )
                                              }
-                                             className="bg-blue-600 text-white py-2 rounded-md text-xs"
+                                             className="bg-blue-600 text-white py-2 rounded-md text-sm"
                                           >
                                              UPI
                                           </button>
@@ -833,19 +863,19 @@ export default function OrderManagementPage() {
                   <table className="w-full table-fixed">
                      <thead className="bg-gray-50 ">
                         <tr>
-                           <th className="px-6 py-3 text-left w-[20%] text-xs font-bold text-gray-500 uppercase tracking-wider">
+                           <th className="px-6 py-3 text-left w-[20%] text-sm font-bold text-gray-500 uppercase tracking-wider">
                               Order Details
                            </th>
-                           <th className="px-6 py-3 text-left  w-[10%] text-xs font-bold text-gray-500 uppercase tracking-wider">
+                           <th className="px-6 py-3 text-left  w-[10%] text-sm font-bold text-gray-500 uppercase tracking-wider">
                               Cus
                            </th>
-                           <th className="px-6 py-3 text-left  w-[10%] text-xs font-bold text-gray-500 uppercase tracking-wider">
+                           <th className="px-6 py-3 text-left  w-[10%] text-sm font-bold text-gray-500 uppercase tracking-wider">
                               Items & Amt
                            </th>
-                           <th className="px-6 py-3 text-left w-[30%] text-xs font-bold text-gray-500 uppercase tracking-wider">
+                           <th className="px-6 py-3 text-left w-[30%] text-sm font-bold text-gray-500 uppercase tracking-wider">
                               Status
                            </th>
-                           <th className="px-6 py-3 text-left w-[30%] text-xs font-bold text-gray-500 uppercase tracking-wider">
+                           <th className="px-6 py-3 text-left w-[30%] text-sm font-bold text-gray-500 uppercase tracking-wider">
                               Actions
                            </th>
                         </tr>
@@ -855,10 +885,16 @@ export default function OrderManagementPage() {
                            <tr key={order._id} className="hover:bg-gray-50">
                               <td className="px-6 py-4 align-top">
                                  <div>
-                                    <div className="text-sm font-medium text-gray-900">
+                                    <div
+                                       className="text-md
+                                     font-medium text-gray-900"
+                                    >
                                        #{order.orderNumber}
                                     </div>
-                                    <div className="text-sm text-gray-500">
+                                    <div
+                                       className="text-md
+                                     text-gray-500"
+                                    >
                                        {new Date(
                                           order.createdAt,
                                        ).toLocaleDateString("en-IN", {
@@ -869,7 +905,7 @@ export default function OrderManagementPage() {
                                           minute: "2-digit",
                                        })}
                                     </div>
-                                    <div className="text-xs text-gray-400">
+                                    <div className="text-sm text-gray-400">
                                        {order.paymentMethod
                                           ?.replace("_", " ")
                                           .toUpperCase()}
@@ -878,13 +914,19 @@ export default function OrderManagementPage() {
                               </td>
                               <td className="px-6 py-4 align-top">
                                  <div>
-                                    <div className="text-sm font-medium text-gray-900">
+                                    <div
+                                       className="text-md
+                                     font-medium text-gray-900"
+                                    >
                                        {order.userId?.name || "N/A"}
                                     </div>
-                                    <div className="text-sm text-gray-500">
+                                    <div
+                                       className="text-md
+                                     text-gray-500"
+                                    >
                                        {order.userId?.email || "N/A"}
                                     </div>
-                                    <div className="text-xs text-gray-400">
+                                    <div className="text-sm text-gray-400">
                                        {order.deliveryAddress?.city},{" "}
                                        {order.deliveryAddress?.pincode}
                                     </div>
@@ -892,15 +934,21 @@ export default function OrderManagementPage() {
                               </td>
                               <td className="px-6 py-4 align-top">
                                  <div>
-                                    <div className="text-sm font-medium text-gray-900 ">
+                                    <div
+                                       className="text-md
+                                     font-medium text-gray-900 "
+                                    >
                                        ₹{order.finalAmount}
                                     </div>
-                                    <div className="text-sm text-gray-500">
+                                    <div
+                                       className="text-md
+                                     text-gray-500"
+                                    >
                                        {order.items?.length || 0} item
                                        {order.items?.length !== 1 ? "s" : ""}
                                     </div>
                                     {order.deliveryCharges > 0 && (
-                                       <div className="text-xs text-gray-400">
+                                       <div className="text-sm text-gray-400">
                                           +₹{order.deliveryCharges} delivery
                                        </div>
                                     )}
@@ -917,7 +965,7 @@ export default function OrderManagementPage() {
                                              e.target.value,
                                           )
                                        }
-                                       className={`text-xs font-medium px-2 py-1 rounded-full border-0 ${getStatusColor(
+                                       className={`text-sm font-medium px-2 py-1 rounded-full border-0 ${getStatusColor(
                                           order.orderStatus,
                                        )}`}
                                     >
@@ -936,7 +984,7 @@ export default function OrderManagementPage() {
                                     </select> */}
                                     {/* Display-only status badge - NO dropdown */}
                                     <span
-                                       className={`text-xs font-medium px-2 py-1 rounded-full inline-block ${getStatusColor(order.orderStatus)}`}
+                                       className={`text-sm font-medium px-2 py-1 rounded-full inline-block ${getStatusColor(order.orderStatus)}`}
                                     >
                                        {getDisplayStatus(
                                           order.orderStatus,
@@ -944,7 +992,7 @@ export default function OrderManagementPage() {
                                        )}
                                     </span>
                                     <div
-                                       className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(
+                                       className={`inline-flex px-2 py-1 text-sm font-medium rounded-full ${getPaymentStatusColor(
                                           order.paymentStatus,
                                        )}`}
                                     >
@@ -952,7 +1000,8 @@ export default function OrderManagementPage() {
                                     </div>
                                  </div>
                               </td>
-                              {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              {/* <td className="px-6 py-4 whitespace-nowrap text-md
+                               font-medium">
                                  <button
                                     onClick={() => handleViewDetails(order._id)}
                                     className="text-blue-600 hover:text-blue-900 mr-3"
@@ -961,7 +1010,10 @@ export default function OrderManagementPage() {
                                  </button>
                               </td> */}
 
-                              <td className="px-6 py-4 align-top text-sm font-medium">
+                              <td
+                                 className="px-6 py-4 align-top text-md
+                               font-medium"
+                              >
                                  <div className="flex flex-col gap-2">
                                     <button
                                        onClick={() =>
@@ -1112,7 +1164,7 @@ export default function OrderManagementPage() {
 
                {filteredOrders.length === 0 && !loading && (
                   <div className="text-center py-8">
-                     <div className="text-gray-500 text-lg mb-2">
+                     <div className="text-gray-500 text-xl mb-2">
                         No orders found
                      </div>
                      <p className="text-gray-400">
@@ -1133,7 +1185,7 @@ export default function OrderManagementPage() {
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                <div className="bg-white rounded-lg p-6 max-w-4xl max-h-[90vh] overflow-y-auto m-4">
                   <div className="flex justify-between items-center mb-4">
-                     <h2 className="text-xl font-bold">
+                     <h2 className="text-2xl font-bold">
                         Order Details - #{selectedOrder.orderNumber}
                      </h2>
                      <button
@@ -1150,7 +1202,10 @@ export default function OrderManagementPage() {
                         <h3 className="font-semibold mb-2">
                            Customer Information
                         </h3>
-                        <div className="space-y-1 text-sm">
+                        <div
+                           className="space-y-1 text-md
+                        "
+                        >
                            <p>
                               <strong>Name:</strong>{" "}
                               {selectedOrder.userId?.name}
@@ -1171,7 +1226,10 @@ export default function OrderManagementPage() {
                         <h3 className="font-semibold mb-2">
                            Order Information
                         </h3>
-                        <div className="space-y-1 text-sm">
+                        <div
+                           className="space-y-1 text-md
+                        "
+                        >
                            <p>
                               <strong>Order Date:</strong>{" "}
                               {new Date(selectedOrder.createdAt).toLocaleString(
@@ -1192,7 +1250,10 @@ export default function OrderManagementPage() {
                      {/* Delivery Address */}
                      <div>
                         <h3 className="font-semibold mb-2">Delivery Address</h3>
-                        <div className="text-sm">
+                        <div
+                           className="text-md
+                        "
+                        >
                            <p>{selectedOrder.deliveryAddress?.addressLine1}</p>
                            {selectedOrder.deliveryAddress?.addressLine2 && (
                               <p>
@@ -1217,15 +1278,18 @@ export default function OrderManagementPage() {
                                  className="flex justify-between items-center border-b pb-3"
                               >
                                  <div className="flex-1">
-                                    <p className="font-medium text-sm">
+                                    <p
+                                       className="font-medium text-md
+                                    "
+                                    >
                                        {item.menuItem?.name || "Unknown Item"}
                                     </p>
-                                    <p className="text-gray-500 text-xs">
+                                    <p className="text-gray-500 text-sm">
                                        Qty: {item.quantity} × ₹{item.price} = ₹
                                        {item.price * item.quantity}
                                     </p>
                                     {item.specialInstructions && (
-                                       <p className="text-orange-600 text-xs italic mt-1">
+                                       <p className="text-orange-600 text-sm italic mt-1">
                                           Note: {item.specialInstructions}
                                        </p>
                                     )}
@@ -1316,7 +1380,7 @@ export default function OrderManagementPage() {
                                           selectedOrder._id,
                                        )
                                     }
-                                    className="bg-purple-600 text-white px-3 py-1 rounded text-xs hover:bg-purple-700"
+                                    className="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700"
                                  >
                                     Mark All Ready
                                  </button>
@@ -1326,7 +1390,7 @@ export default function OrderManagementPage() {
                                           selectedOrder._id,
                                        )
                                     }
-                                    className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700"
+                                    className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
                                  >
                                     Mark All Served
                                  </button>
@@ -1339,23 +1403,35 @@ export default function OrderManagementPage() {
                   <div className="mt-6 pt-4 border-t">
                      <div className="flex justify-between items-center">
                         <div>
-                           <p className="text-sm text-gray-600">
+                           <p
+                              className="text-md
+                            text-gray-600"
+                           >
                               Subtotal: ₹{selectedOrder.totalAmount}
                            </p>
-                           <p className="text-sm text-gray-600">
+                           <p
+                              className="text-md
+                            text-gray-600"
+                           >
                               Delivery: ₹{selectedOrder.deliveryCharges}
                            </p>
-                           <p className="text-sm text-gray-600">
+                           <p
+                              className="text-md
+                            text-gray-600"
+                           >
                               Taxes: ₹{selectedOrder.taxes}
                            </p>
                            {selectedOrder.discountAmount > 0 && (
-                              <p className="text-sm text-green-600">
+                              <p
+                                 className="text-md
+                               text-green-600"
+                              >
                                  Discount: -₹{selectedOrder.discountAmount}
                               </p>
                            )}
                         </div>
                         <div className="text-right">
-                           <p className="text-lg font-bold">
+                           <p className="text-xl font-bold">
                               Total: ₹{selectedOrder.finalAmount}
                            </p>
                         </div>
@@ -1379,7 +1455,8 @@ export default function OrderManagementPage() {
                                  .map((status, index) => (
                                     <div
                                        key={index}
-                                       className="flex justify-between text-sm"
+                                       className="flex justify-between text-md
+                                       "
                                     >
                                        <span className="capitalize">
                                           {status.status?.replace("-", " ")}

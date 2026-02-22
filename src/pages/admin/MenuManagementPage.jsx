@@ -494,7 +494,7 @@ export default function MenuManagementPage() {
                      {/* Top Row */}
                      <div className="flex justify-between items-start">
                         <div>
-                           <h2 className="text-lg font-semibold text-gray-800">
+                           <h2 className="text-xl font-semibold text-gray-800">
                               {item.name}
                            </h2>
                            <p className="text-sm text-gray-500">
@@ -502,7 +502,7 @@ export default function MenuManagementPage() {
                            </p>
                         </div>
 
-                        <p className="text-lg font-bold text-indigo-600">
+                        <p className="text-xl font-bold text-indigo-600">
                            ₹{item.price}
                         </p>
                      </div>
@@ -511,7 +511,7 @@ export default function MenuManagementPage() {
                      <div className="mt-3 flex justify-between items-center">
                         <button
                            onClick={() => handleToggleAvailability(item)}
-                           className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                           className={`px-3 py-1 text-md font-semibold rounded-full ${
                               item.isAvailable
                                  ? "bg-green-100 text-green-800"
                                  : "bg-red-100 text-red-800"
@@ -539,22 +539,22 @@ export default function MenuManagementPage() {
                <table className="min-w-full">
                   <thead className="bg-gray-50">
                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        <th className="px-6 py-3 text-left text-md font-medium text-gray-500 uppercase">
                            Name
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        <th className="px-6 py-3 text-left text-md font-medium text-gray-500 uppercase">
                            Price
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        <th className="px-6 py-3 text-left text-md font-medium text-gray-500 uppercase">
                            Category
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        <th className="px-6 py-3 text-left text-md font-medium text-gray-500 uppercase">
                            Section
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        <th className="px-6 py-3 text-left text-md font-medium text-gray-500 uppercase">
                            Available
                         </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                        <th className="px-6 py-3 text-right text-md font-medium text-gray-500 uppercase">
                            Actions
                         </th>
                      </tr>
@@ -577,7 +577,7 @@ export default function MenuManagementPage() {
                            <td className="px-6 py-4">
                               <button
                                  onClick={() => handleToggleAvailability(item)}
-                                 className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                                 className={`px-3 py-1 text-md font-semibold rounded-full ${
                                     item.isAvailable
                                        ? "bg-green-100 text-green-800"
                                        : "bg-red-100 text-red-800"

@@ -193,7 +193,7 @@ export default function InhousePOSPage() {
                      onClick={() => addToCart(item)}
                      className="border rounded-xl p-3 hover:border-indigo-500 cursor-pointer transition-all active:scale-95"
                   >
-                     <h3 className="font-bold text-sm leading-tight h-8">
+                     <h3 className="font-bold text-md leading-tight h-8">
                         {item.name}
                      </h3>
                      <p className="text-indigo-600 font-bold mt-1">
@@ -254,11 +254,11 @@ export default function InhousePOSPage() {
                {cart.map((item) => (
                   <div
                      key={item._id}
-                     className="flex justify-between items-center text-sm"
+                     className="flex justify-between items-center text-md"
                   >
                      <div className="flex-1">
                         <p className="font-semibold">{item.name}</p>
-                        <p className="text-gray-500 text-xs">
+                        <p className="text-gray-500 text-sm">
                            ₹{item.price} x {item.qty}
                         </p>
                      </div>
@@ -281,11 +281,11 @@ export default function InhousePOSPage() {
             </div>
 
             <div className="p-4 bg-gray-50 border-t space-y-2">
-               <div className="flex justify-between text-gray-600 text-sm">
+               <div className="flex justify-between text-gray-600 text-md">
                   <span>Subtotal</span>
                   <span>₹{calculateTotal()}</span>
                </div>
-               <div className="flex justify-between text-gray-600 text-sm">
+               <div className="flex justify-between text-gray-600 text-md">
                   <span>Taxes (5%)</span>
                   <span>₹{Math.round(calculateTotal() * 0.05)}</span>
                </div>
