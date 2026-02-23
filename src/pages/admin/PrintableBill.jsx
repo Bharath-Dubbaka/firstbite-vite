@@ -14,7 +14,7 @@ export const PrintableBill = React.forwardRef(({ order }, ref) => {
    return (
       <div
          ref={ref}
-         className="p-6 bg-white text-black font-mono w-[58mm] mx-auto text-[10px] leading-tight"
+         className="p-6 bg-white text-black font-mono w-[80mm] mx-auto text-[10px] leading-tight"
       >
          {/* ========== HEADER ========== */}
          <div className="text-center mb-3 border-b-2 border-black pb-2">

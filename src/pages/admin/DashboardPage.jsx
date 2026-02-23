@@ -50,15 +50,18 @@ const fmtDate = (d) =>
       month: "short",
       year: "numeric",
    });
-const isoDate = (d) => d.toISOString().slice(0, 10);
-
-function dayBounds(dateStr) {
-   const start = new Date(dateStr);
-   start.setHours(0, 0, 0, 0);
-   const end = new Date(dateStr);
-   end.setHours(23, 59, 59, 999);
-   return { start, end };
-}
+const isoDate = (d) => {
+   // Get current date in IST
+   const ist = new Date(d.getTime() + 5.5 * 60 * 60 * 1000);
+   return ist.toISOString().slice(0, 10);
+};
+const getISTDateStr = (isoString) => {
+   // createdAt comes from MongoDB as UTC ISO string
+   // Add 5:30 to get IST date
+   const utc = new Date(isoString);
+   const ist = new Date(utc.getTime() + 5.5 * 60 * 60 * 1000);
+   return ist.toISOString().slice(0, 10); // "2026-02-24"
+};
 
 // ─── Tiny SVG Sparkline ───────────────────────────────────────────────────────
 function Sparkline({ data = [], color = "#6366f1" }) {
@@ -523,24 +526,19 @@ export default function AdminDashboard() {
    }, [fetchAll]);
 
    // ── Compute stats for selected date ──────────────────────────────────────
-   const { start: dayStart, end: dayEnd } = dayBounds(selectedDate);
    const isToday = selectedDate === isoDate(new Date());
 
-   const dayOrders = allOrders.filter((o) => {
-      const d = new Date(o.createdAt);
-      return d >= dayStart && d <= dayEnd;
-   });
-
-   const prevDate = isoDate(
-      new Date(
-         new Date(selectedDate).setDate(new Date(selectedDate).getDate() - 1),
-      ),
+   const dayOrders = allOrders.filter(
+      (o) => getISTDateStr(o.createdAt) === selectedDate,
    );
-   const { start: prevStart, end: prevEnd } = dayBounds(prevDate);
-   const prevOrders = allOrders.filter((o) => {
-      const d = new Date(o.createdAt);
-      return d >= prevStart && d <= prevEnd;
-   });
+
+   // Just subtract 1 day from the string directly — no timezone math needed
+   const [sy, sm, sd] = selectedDate.split("-").map(Number);
+   const prevDateObj = new Date(Date.UTC(sy, sm - 1, sd - 1));
+   const prevDate = prevDateObj.toISOString().slice(0, 10); // "2026-02-23"
+   const prevOrders = allOrders.filter(
+      (o) => getISTDateStr(o.createdAt) === prevDate,
+   );
 
    const dayRevenue = dayOrders
       .filter((o) => o.paymentStatus === "completed")
@@ -586,10 +584,9 @@ export default function AdminDashboard() {
       ds.setHours(0, 0, 0, 0);
       const de = new Date(d);
       de.setHours(23, 59, 59, 999);
-      const dayOs = allOrders.filter((o) => {
-         const c = new Date(o.createdAt);
-         return c >= ds && c <= de;
-      });
+      const dayOs = allOrders.filter(
+         (o) => getISTDateStr(o.createdAt) === dateStr,
+      );
       return {
          label: d.toLocaleDateString("en-IN", {
             day: "numeric",
@@ -610,7 +607,7 @@ export default function AdminDashboard() {
    const itemMap = {};
    dayOrders.forEach((o) => {
       (o.items || []).forEach((i) => {
-         const name = i.menuItem?.name || "Unknown";
+         const name = i.name || i.menuItem?.name || "Unknown";
          itemMap[name] = (itemMap[name] || 0) + (i.quantity || 1);
       });
    });
