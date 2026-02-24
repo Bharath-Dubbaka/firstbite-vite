@@ -1282,7 +1282,9 @@ export default function OrderManagementPage() {
                                        className="font-medium text-md
                                     "
                                     >
-                                       {item.menuItem?.name || "Unknown Item"}
+                                       {item.name ||
+                                          item.menuItem?.name ||
+                                          "Unknown Item"}
                                     </p>
                                     <p className="text-gray-500 text-sm">
                                        Qty: {item.quantity} × ₹{item.price} = ₹

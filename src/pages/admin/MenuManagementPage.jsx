@@ -452,6 +452,25 @@ export default function MenuManagementPage() {
       }
    };
 
+   const handleDelete = async (item) => {
+      if (
+         !window.confirm(
+            `Delete "${item.name}"? This cannot be undone.\n\nNote: Past orders with this item will still show the price but may lose the item name unless snapshots are stored.`,
+         )
+      )
+         return;
+
+      const token = localStorage.getItem("adminToken");
+      try {
+         await axios.delete(`${API_BASE_URL}/${item._id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+         });
+         fetchMenuItems();
+      } catch (err) {
+         setError("Failed to delete menu item.");
+      }
+   };
+
    return (
       <div>
          {/* Header Section */}
@@ -529,6 +548,13 @@ export default function MenuManagementPage() {
                         >
                            <Edit size={18} />
                         </button>
+
+                        <button
+                           onClick={() => handleDelete(item)}
+                           className="text-red-500"
+                        >
+                           <Trash2 size={18} />
+                        </button>
                      </div>
                   </div>
                ))}
@@ -595,6 +621,13 @@ export default function MenuManagementPage() {
                                  className="text-indigo-600"
                               >
                                  <Edit size={18} />
+                              </button>
+
+                              <button
+                                 onClick={() => handleDelete(item)}
+                                 className="text-red-500 ml-3"
+                              >
+                                 <Trash2 size={18} />
                               </button>
                            </td>
                         </tr>

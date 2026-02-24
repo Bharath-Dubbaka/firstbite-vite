@@ -95,7 +95,7 @@ export const PrintableBill = React.forwardRef(({ order }, ref) => {
                {order.items?.map((item, idx) => (
                   <tr key={idx} className="border-b border-gray-300">
                      <td className="py-1 pr-1">
-                        {item.menuItem?.name || "Item"}
+                        {item.name || item.menuItem?.name || "Item"}
                      </td>
                      <td className="text-center px-1">{item.quantity}</td>
                      <td className="text-right px-1">₹{item.price}</td>
