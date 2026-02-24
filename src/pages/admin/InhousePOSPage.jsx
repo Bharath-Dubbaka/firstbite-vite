@@ -17,6 +17,8 @@ export default function InhousePOSPage() {
    const [customerName, setCustomerName] = useState("");
    const [guestCount, setGuestCount] = useState(1);
    const [activeOrderForTable, setActiveOrderForTable] = useState(null);
+   const [addonModal, setAddonModal] = useState(null);
+   // addonModal = { menuItem, selectedAddons: [] } or null
 
    useEffect(() => {
       const fetchMenu = async () => {
@@ -37,12 +39,82 @@ export default function InhousePOSPage() {
       });
    };
 
+   // ── Helper: open addon picker or add directly ──────────────────
+   const handleAddToCart = (menuItem) => {
+      if (menuItem.addons && menuItem.addons.length > 0) {
+         // Has addons → show picker
+         setAddonModal({ menuItem, selectedAddons: [] });
+      } else {
+         // No addons → add directly as before
+         addItemToCart(menuItem, []);
+      }
+   };
+
+   // ── Helper: actually push to cart ─────────────────────────────
+   const addItemToCart = (menuItem, selectedAddons) => {
+      const addonTotal = selectedAddons.reduce((sum, a) => sum + a.price, 0);
+
+      setCart((prev) => {
+         // Check if same item with same addons already exists
+         const existingIdx = prev.findIndex(
+            (c) =>
+               c.menuItem === menuItem._id &&
+               JSON.stringify(c.selectedAddons) ===
+                  JSON.stringify(selectedAddons),
+         );
+
+         if (existingIdx >= 0) {
+            const updated = [...prev];
+            updated[existingIdx].quantity += 1;
+            return updated;
+         }
+
+         return [
+            ...prev,
+            {
+               menuItem: menuItem._id,
+               name: menuItem.name,
+               price: menuItem.price + addonTotal, // base + addons
+               basePrice: menuItem.price,
+               selectedAddons,
+               quantity: 1,
+            },
+         ];
+      });
+   };
+
    const removeFromCart = (id) => {
       setCart((prev) => prev.filter((i) => i._id !== id));
    };
 
+   //update your qty handlers to use index (since two burger items with different addons are separate cart rows)
+   const increaseQty = (idx) => {
+      setCart((prev) => {
+         const updated = [...prev];
+         updated[idx] = {
+            ...updated[idx],
+            quantity: updated[idx].quantity + 1,
+         };
+         return updated;
+      });
+   };
+
+   const decreaseQty = (idx) => {
+      setCart((prev) => {
+         const updated = [...prev];
+         if (updated[idx].quantity <= 1) {
+            return updated.filter((_, i) => i !== idx);
+         }
+         updated[idx] = {
+            ...updated[idx],
+            quantity: updated[idx].quantity - 1,
+         };
+         return updated;
+      });
+   };
+
    const calculateTotal = () =>
-      cart.reduce((acc, item) => acc + item.price * item.qty, 0);
+      cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
    const checkTableStatus = async (num) => {
       if (!num) return;
@@ -68,13 +140,30 @@ export default function InhousePOSPage() {
       if (!tableNumber) return toast.error("Please select a table");
       if (cart.length === 0) return toast.error("Cart is empty");
 
-      // ✅ Define orderPayload BEFORE using it
+      // ✅ FIXED: use new cart shape
+      const cartItems = cart.map((i) => ({
+         menuItem: i.menuItem,
+         quantity: i.quantity,
+         selectedAddons: i.selectedAddons || [],
+      }));
+
       const orderPayload = {
-         tableNumber: Number(tableNumber), // Ensure it's a number
+         tableNumber: Number(tableNumber),
          customerName,
          guestCount: Number(guestCount),
-         items: cart.map((i) => ({ menuItem: i._id, quantity: i.qty })),
+         items: cartItems, // ✅ use cartItems everywhere below inPlace of  orderPayload.items
       };
+      // ✅ Define orderPayload BEFORE using it
+      // const orderPayload = {
+      //    tableNumber: Number(tableNumber), // Ensure it's a number
+      //    customerName,
+      //    guestCount: Number(guestCount),
+      //    items: cart.map((i) => ({
+      //       menuItem: i.menuItem,
+      //       quantity: i.quantity,
+      //       selectedAddons: i.selectedAddons || [],
+      //    })),
+      // };
 
       console.log("🔍 Submitting order:", {
          tableNumber,
@@ -105,7 +194,7 @@ export default function InhousePOSPage() {
 
                const response = await axios.put(
                   `${BASE_URL}/admin/inhouse/orders/${orderId}/add-items`,
-                  { items: orderPayload.items },
+                  { items: cartItems },
                   config,
                );
 
@@ -149,7 +238,7 @@ export default function InhousePOSPage() {
             try {
                const response = await axios.put(
                   `${BASE_URL}/admin/inhouse/orders/${existingId}/add-items`,
-                  { items: orderPayload.items },
+                  { items: cartItems },
                   config,
                );
 
@@ -190,7 +279,7 @@ export default function InhousePOSPage() {
                {menu.map((item) => (
                   <div
                      key={item._id}
-                     onClick={() => addToCart(item)}
+                     onClick={() => handleAddToCart(item)}
                      className="border rounded-xl p-3 hover:border-indigo-500 cursor-pointer transition-all active:scale-95"
                   >
                      <h3 className="font-bold text-md leading-tight h-8">
@@ -251,7 +340,7 @@ export default function InhousePOSPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-               {cart.map((item) => (
+               {/* {cart.map((item) => (
                   <div
                      key={item._id}
                      className="flex justify-between items-center text-md"
@@ -271,6 +360,45 @@ export default function InhousePOSPage() {
                            className="text-red-400 hover:text-red-600"
                         >
                            <Trash2 size={16} />
+                        </button>
+                     </div>
+                  </div>
+               ))} */}
+
+               {cart.map((item, idx) => (
+                  <div
+                     key={`${item.menuItem}-${idx}`}
+                     className="flex justify-between items-start border-b py-2"
+                  >
+                     <div className="flex-1">
+                        <p className="font-medium text-sm">{item.name}</p>
+                        {/* ← ADD: show selected addons in cart */}
+                        {item.selectedAddons?.length > 0 && (
+                           <div className="text-xs text-indigo-500 mt-0.5">
+                              {item.selectedAddons.map((a, i) => (
+                                 <span key={i} className="mr-2">
+                                    +{a.name} ₹{a.price}
+                                 </span>
+                              ))}
+                           </div>
+                        )}
+                        <p className="text-xs text-gray-500">
+                           ₹{item.price} × {item.quantity}
+                        </p>
+                     </div>
+                     <div className="flex items-center gap-2">
+                        <button
+                           onClick={() => decreaseQty(idx)}
+                           className="..."
+                        >
+                           −
+                        </button>
+                        <span>{item.quantity}</span>
+                        <button
+                           onClick={() => increaseQty(idx)}
+                           className="..."
+                        >
+                           +
                         </button>
                      </div>
                   </div>
@@ -310,6 +438,115 @@ export default function InhousePOSPage() {
                </button>
             </div>
          </div>
+         {/* ========== ADDON PICKER MODAL ========== */}
+         {addonModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+               <div className="bg-white rounded-xl p-5 w-80 shadow-2xl">
+                  <h3 className="font-bold text-lg mb-1">
+                     {addonModal.menuItem.name}
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                     Select add-ons (all optional)
+                  </p>
+
+                  <div className="space-y-2 max-h-64 overflow-y-auto mb-4">
+                     {addonModal.menuItem.addons
+                        .filter((a) => a.isAvailable)
+                        .map((addon, idx) => {
+                           const isSelected = addonModal.selectedAddons.some(
+                              (a) => a.name === addon.name,
+                           );
+                           return (
+                              <label
+                                 key={idx}
+                                 className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition ${
+                                    isSelected
+                                       ? "border-indigo-500 bg-indigo-50"
+                                       : "border-gray-200 hover:border-gray-300"
+                                 }`}
+                              >
+                                 <div className="flex items-center gap-2">
+                                    <input
+                                       type="checkbox"
+                                       checked={isSelected}
+                                       onChange={() => {
+                                          setAddonModal((prev) => ({
+                                             ...prev,
+                                             selectedAddons: isSelected
+                                                ? prev.selectedAddons.filter(
+                                                     (a) =>
+                                                        a.name !== addon.name,
+                                                  )
+                                                : [
+                                                     ...prev.selectedAddons,
+                                                     {
+                                                        name: addon.name,
+                                                        price: addon.price,
+                                                     },
+                                                  ],
+                                          }));
+                                       }}
+                                       className="accent-indigo-600"
+                                    />
+                                    <span className="text-sm font-medium">
+                                       {addon.name}
+                                    </span>
+                                 </div>
+                                 <span className="text-sm text-indigo-600 font-semibold">
+                                    +₹{addon.price}
+                                 </span>
+                              </label>
+                           );
+                        })}
+                  </div>
+
+                  {/* Price preview */}
+                  <div className="text-sm text-gray-600 mb-4 border-t pt-3">
+                     Base: ₹{addonModal.menuItem.price}
+                     {addonModal.selectedAddons.length > 0 && (
+                        <>
+                           {" "}
+                           + Add-ons: ₹
+                           {addonModal.selectedAddons.reduce(
+                              (s, a) => s + a.price,
+                              0,
+                           )}{" "}
+                           ={" "}
+                           <span className="font-bold text-gray-900">
+                              ₹
+                              {addonModal.menuItem.price +
+                                 addonModal.selectedAddons.reduce(
+                                    (s, a) => s + a.price,
+                                    0,
+                                 )}
+                           </span>
+                        </>
+                     )}
+                  </div>
+
+                  <div className="flex gap-2">
+                     <button
+                        onClick={() => setAddonModal(null)}
+                        className="flex-1 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+                     >
+                        Cancel
+                     </button>
+                     <button
+                        onClick={() => {
+                           addItemToCart(
+                              addonModal.menuItem,
+                              addonModal.selectedAddons,
+                           );
+                           setAddonModal(null);
+                        }}
+                        className="flex-1 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700"
+                     >
+                        Add to Order
+                     </button>
+                  </div>
+               </div>
+            </div>
+         )}
       </div>
    );
 }

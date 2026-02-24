@@ -67,8 +67,7 @@ export default function KitchenDisplayPage() {
       }
    };
 
-
-   //getting from statusHistory  
+   //getting from statusHistory
    const getTimeElapsed = (createdAt) => {
       const diff = Math.floor((now - new Date(createdAt)) / 60000);
       return diff < 1 ? "Just now" : `${diff}m ago`;
@@ -143,6 +142,23 @@ export default function KitchenDisplayPage() {
                                        <span className="text-base text-slate-200">
                                           {item.name}
                                        </span>
+                                       {/* Show selected addons */}
+                                       {item.selectedAddons &&
+                                          item.selectedAddons.length > 0 && (
+                                             <div className="mt-1 space-y-0.5">
+                                                {item.selectedAddons.map(
+                                                   (addon, i) => (
+                                                      <p
+                                                         key={i}
+                                                         className="text-xs text-orange-300"
+                                                      >
+                                                         + {addon.name} (₹
+                                                         {addon.price})
+                                                      </p>
+                                                   ),
+                                                )}
+                                             </div>
+                                          )}
                                        {/* {getItemTimeElapsed(item.createdAt)} */}
 
                                        {item.specialInstructions && (

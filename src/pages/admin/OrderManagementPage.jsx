@@ -1286,9 +1286,32 @@ export default function OrderManagementPage() {
                                           item.menuItem?.name ||
                                           "Unknown Item"}
                                     </p>
+                                    {item.selectedAddons &&
+                                       item.selectedAddons.length > 0 && (
+                                          <div className="text-xs text-indigo-600 mt-0.5 space-y-0.5">
+                                             {item.selectedAddons.map(
+                                                (a, i) => (
+                                                   <span
+                                                      key={i}
+                                                      className="inline-block mr-2"
+                                                   >
+                                                      + {a.name} (₹{a.price})
+                                                   </span>
+                                                ),
+                                             )}
+                                          </div>
+                                       )}
                                     <p className="text-gray-500 text-sm">
-                                       Qty: {item.quantity} × ₹{item.price} = ₹
-                                       {item.price * item.quantity}
+                                       Qty: {item.quantity} × ₹{item.price}
+                                       {item.selectedAddons?.length > 0 &&
+                                          ` + ₹${item.selectedAddons.reduce((s, a) => s + a.price, 0)} addons`}{" "}
+                                       = ₹
+                                       {(item.price +
+                                          (item.selectedAddons?.reduce(
+                                             (s, a) => s + a.price,
+                                             0,
+                                          ) || 0)) *
+                                          item.quantity}
                                     </p>
                                     {item.specialInstructions && (
                                        <p className="text-orange-600 text-sm italic mt-1">

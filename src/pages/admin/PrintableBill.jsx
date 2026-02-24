@@ -96,11 +96,33 @@ export const PrintableBill = React.forwardRef(({ order }, ref) => {
                   <tr key={idx} className="border-b border-gray-300">
                      <td className="py-1 pr-1">
                         {item.name || item.menuItem?.name || "Item"}
+                        {item.selectedAddons &&
+                           item.selectedAddons.length > 0 && (
+                              <div className="text-[7px] text-gray-500 mt-0.5">
+                                 {item.selectedAddons.map((a, i) => (
+                                    <div key={i}>
+                                       {" "}
+                                       <span>+ {a.name}</span>
+                                       <span>
+                                          {"  "} ₹{a.price}
+                                       </span>
+                                    </div>
+                                 ))}
+                              </div>
+                           )}
                      </td>
                      <td className="text-center px-1">{item.quantity}</td>
                      <td className="text-right px-1">₹{item.price}</td>
                      <td className="text-right pl-1">
-                        ₹{(item.price * item.quantity).toFixed(2)}
+                        ₹
+                        {(
+                           (item.price +
+                              (item.selectedAddons?.reduce(
+                                 (s, a) => s + a.price,
+                                 0,
+                              ) || 0)) *
+                           item.quantity
+                        ).toFixed(2)}
                      </td>
                   </tr>
                ))}
