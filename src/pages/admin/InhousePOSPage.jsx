@@ -19,6 +19,7 @@ export default function InhousePOSPage() {
    const [activeOrderForTable, setActiveOrderForTable] = useState(null);
    const [addonModal, setAddonModal] = useState(null);
    // addonModal = { menuItem, selectedAddons: [] } or null
+   const [searchQuery, setSearchQuery] = useState("");
 
    useEffect(() => {
       const fetchMenu = async () => {
@@ -38,6 +39,10 @@ export default function InhousePOSPage() {
          return [...prev, { ...item, qty: 1 }];
       });
    };
+
+   const filteredMenu = menu.filter((item) =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()),
+   );
 
    // ── Helper: open addon picker or add directly ──────────────────
    const handleAddToCart = (menuItem) => {
@@ -273,10 +278,12 @@ export default function InhousePOSPage() {
                   type="text"
                   placeholder="Search menu..."
                   className="border rounded-lg px-4 py-2 w-64"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                />
             </div>
             <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 lg:grid-cols-3 gap-4">
-               {menu.map((item) => (
+               {filteredMenu.map((item) => (
                   <div
                      key={item._id}
                      onClick={() => handleAddToCart(item)}

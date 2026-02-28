@@ -115,6 +115,86 @@ const MenuModal = ({ item, onClose, onSave }) => {
                   />
                </div>
 
+               {/* ========== ADDONS SECTION ========== */}
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                     Add-ons (optional extras customer can choose)
+                  </label>
+
+                  {/* Existing addons list */}
+                  <div className="space-y-2 mb-2">
+                     {(formData.addons || []).map((addon, idx) => (
+                        <div key={idx} className="flex gap-2 items-center">
+                           <input
+                              value={addon.name}
+                              onChange={(e) => {
+                                 const updated = [...formData.addons];
+                                 updated[idx] = {
+                                    ...updated[idx],
+                                    name: e.target.value,
+                                 };
+                                 setFormData((prev) => ({
+                                    ...prev,
+                                    addons: updated,
+                                 }));
+                              }}
+                              placeholder="Add-on name (e.g. Extra Cheese)"
+                              className="flex-1 p-2 border rounded text-sm"
+                           />
+                           <input
+                              type="number"
+                              value={addon.price}
+                              onChange={(e) => {
+                                 const updated = [...formData.addons];
+                                 updated[idx] = {
+                                    ...updated[idx],
+                                    price: +e.target.value,
+                                 };
+                                 setFormData((prev) => ({
+                                    ...prev,
+                                    addons: updated,
+                                 }));
+                              }}
+                              placeholder="₹"
+                              className="w-20 p-2 border rounded text-sm"
+                           />
+                           <button
+                              type="button"
+                              onClick={() => {
+                                 const updated = formData.addons.filter(
+                                    (_, i) => i !== idx,
+                                 );
+                                 setFormData((prev) => ({
+                                    ...prev,
+                                    addons: updated,
+                                 }));
+                              }}
+                              className="text-red-500 hover:text-red-700 px-2"
+                           >
+                              ✕
+                           </button>
+                        </div>
+                     ))}
+                  </div>
+
+                  {/* Add new addon button */}
+                  <button
+                     type="button"
+                     onClick={() =>
+                        setFormData((prev) => ({
+                           ...prev,
+                           addons: [
+                              ...(prev.addons || []),
+                              { name: "", price: 0, isAvailable: true },
+                           ],
+                        }))
+                     }
+                     className="text-sm text-indigo-600 hover:text-indigo-800 border border-indigo-300 px-3 py-1 rounded"
+                  >
+                     + Add an add-on
+                  </button>
+               </div>
+
                {/* Preparation Time */}
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -347,86 +427,7 @@ const MenuModal = ({ item, onClose, onSave }) => {
                   </div>
                </div>
 
-               {/* ========== ADDONS SECTION ========== */}
-               <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                     Add-ons (optional extras customer can choose)
-                  </label>
-
-                  {/* Existing addons list */}
-                  <div className="space-y-2 mb-2">
-                     {(formData.addons || []).map((addon, idx) => (
-                        <div key={idx} className="flex gap-2 items-center">
-                           <input
-                              value={addon.name}
-                              onChange={(e) => {
-                                 const updated = [...formData.addons];
-                                 updated[idx] = {
-                                    ...updated[idx],
-                                    name: e.target.value,
-                                 };
-                                 setFormData((prev) => ({
-                                    ...prev,
-                                    addons: updated,
-                                 }));
-                              }}
-                              placeholder="Add-on name (e.g. Extra Cheese)"
-                              className="flex-1 p-2 border rounded text-sm"
-                           />
-                           <input
-                              type="number"
-                              value={addon.price}
-                              onChange={(e) => {
-                                 const updated = [...formData.addons];
-                                 updated[idx] = {
-                                    ...updated[idx],
-                                    price: +e.target.value,
-                                 };
-                                 setFormData((prev) => ({
-                                    ...prev,
-                                    addons: updated,
-                                 }));
-                              }}
-                              placeholder="₹"
-                              className="w-20 p-2 border rounded text-sm"
-                           />
-                           <button
-                              type="button"
-                              onClick={() => {
-                                 const updated = formData.addons.filter(
-                                    (_, i) => i !== idx,
-                                 );
-                                 setFormData((prev) => ({
-                                    ...prev,
-                                    addons: updated,
-                                 }));
-                              }}
-                              className="text-red-500 hover:text-red-700 px-2"
-                           >
-                              ✕
-                           </button>
-                        </div>
-                     ))}
-                  </div>
-
-                  {/* Add new addon button */}
-                  <button
-                     type="button"
-                     onClick={() =>
-                        setFormData((prev) => ({
-                           ...prev,
-                           addons: [
-                              ...(prev.addons || []),
-                              { name: "", price: 0, isAvailable: true },
-                           ],
-                        }))
-                     }
-                     className="text-sm text-indigo-600 hover:text-indigo-800 border border-indigo-300 px-3 py-1 rounded"
-                  >
-                     + Add an add-on
-                  </button>
-               </div>
-
+               {/* ... */}
                {/* Tags */}
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

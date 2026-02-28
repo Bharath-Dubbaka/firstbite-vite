@@ -82,6 +82,7 @@ export default function OrderManagementPage() {
    const [isGenerating, setIsGenerating] = useState(false);
    const componentRef = useRef(null);
    const [showFilters, setShowFilters] = useState(false);
+   const [specificDate, setSpecificDate] = useState("");
 
    // Define separate options
    const onlineStatusOptions = [
@@ -328,6 +329,19 @@ export default function OrderManagementPage() {
                   return orderDate >= weekAgo;
                case "month":
                   return orderDate >= monthAgo;
+               case "specific":
+                  if (specificDate) {
+                     const picked = new Date(specificDate);
+                     const pickedStart = new Date(
+                        picked.getFullYear(),
+                        picked.getMonth(),
+                        picked.getDate(),
+                     );
+                     const pickedEnd = new Date(pickedStart);
+                     pickedEnd.setDate(pickedEnd.getDate() + 1);
+                     return orderDate >= pickedStart && orderDate < pickedEnd;
+                  }
+                  return true;
                default:
                   return true;
             }
@@ -353,7 +367,15 @@ export default function OrderManagementPage() {
       });
 
       setFilteredOrders(filtered);
-   }, [orders, searchTerm, statusFilter, paymentFilter, dateFilter, sortBy]);
+   }, [
+      orders,
+      searchTerm,
+      statusFilter,
+      paymentFilter,
+      dateFilter,
+      sortBy,
+      specificDate,
+   ]);
 
    const handleStatusChange = async (orderId, newStatus) => {
       try {
@@ -518,6 +540,7 @@ export default function OrderManagementPage() {
       setStatusFilter("all");
       setPaymentFilter("all");
       setDateFilter("all");
+      setSpecificDate("");
       setSortBy("newest");
    };
 
@@ -633,24 +656,82 @@ export default function OrderManagementPage() {
                </div>
 
                {/* Date Filter */}
+               {/* Date Filter */}
                <div>
-                  <label
-                     className="block text-md
-                   font-medium text-gray-700 mb-2"
-                  >
-                     Date Range
+                  <label className="block text-md font-medium text-gray-700 mb-2">
+                     Date
                   </label>
-                  <select
-                     value={dateFilter}
-                     onChange={(e) => setDateFilter(e.target.value)}
-                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                  >
-                     <option value="all">All Time</option>
-                     <option value="today">Today</option>
-                     <option value="yesterday">Yesterday</option>
-                     <option value="week">Last Week</option>
-                     <option value="month">Last Month</option>
-                  </select>
+                  <div className="flex items-center gap-1 border border-gray-300 rounded-md overflow-hidden">
+                     {/* Prev day arrow */}
+                     <button
+                        type="button"
+                        onClick={() => {
+                           const base = specificDate
+                              ? specificDate
+                              : new Date().toISOString().split("T")[0];
+                           const [y, m, d] = base.split("-").map(Number);
+                           const prev = new Date(y, m - 1, d - 1);
+                           const pad = (n) => String(n).padStart(2, "0");
+                           setSpecificDate(
+                              `${prev.getFullYear()}-${pad(prev.getMonth() + 1)}-${pad(prev.getDate())}`,
+                           );
+                           setDateFilter("specific");
+                        }}
+                        className="px-2 py-2 text-gray-500 hover:bg-gray-100 transition text-sm font-bold"
+                     >
+                        ‹
+                     </button>
+
+                     {/* Date input */}
+                     <input
+                        type="date"
+                        value={
+                           specificDate ||
+                           new Date().toISOString().split("T")[0]
+                        }
+                        onChange={(e) => {
+                           setSpecificDate(e.target.value);
+                           setDateFilter("specific");
+                        }}
+                        max={new Date().toISOString().split("T")[0]}
+                        className="flex-1 p-2 text-sm text-center border-0 outline-none bg-white"
+                     />
+
+                     {/* Next day arrow */}
+                     <button
+                        type="button"
+                        onClick={() => {
+                           const base = specificDate
+                              ? specificDate
+                              : new Date().toISOString().split("T")[0];
+                           const [y, m, d] = base.split("-").map(Number);
+                           const next = new Date(y, m - 1, d + 1);
+                           const pad = (n) => String(n).padStart(2, "0");
+                           const nextStr = `${next.getFullYear()}-${pad(next.getMonth() + 1)}-${pad(next.getDate())}`;
+                           const today = new Date().toISOString().split("T")[0];
+                           if (nextStr <= today) {
+                              setSpecificDate(nextStr);
+                              setDateFilter("specific");
+                           }
+                        }}
+                        className="px-2 py-2 text-gray-500 hover:bg-gray-100 transition text-sm font-bold"
+                     >
+                        ›
+                     </button>
+                  </div>
+
+                  {/* Clear to show all */}
+                  {specificDate && (
+                     <button
+                        onClick={() => {
+                           setSpecificDate("");
+                           setDateFilter("all");
+                        }}
+                        className="text-xs text-indigo-500 hover:text-indigo-700 mt-1 underline"
+                     >
+                        Clear (show all)
+                     </button>
+                  )}
                </div>
 
                {/* Sort */}

@@ -28,7 +28,7 @@ export const PrintableBill = React.forwardRef(({ order }, ref) => {
                Hyderabad, Telangana - 500019
             </p>
             <p className="text-[8px] mt-1">
-               Phone: +91 98765 43210 | Email: hello@loveatfirstbyte.in
+               Phone: +91 62645 88151 | Email: loveatfirstbyte.437@gmail.com
             </p>
          </div>
 
@@ -39,7 +39,7 @@ export const PrintableBill = React.forwardRef(({ order }, ref) => {
                   <strong>GSTIN:</strong> 36BTSPP2167F1Z9
                </div>
                <div className="text-right">
-                  <strong>FSSAI:</strong> 12345678901234
+                  <strong>FSSAI:</strong> 23625032007297
                </div>
             </div>
             <div className="text-[8px] mt-1">
