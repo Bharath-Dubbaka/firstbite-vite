@@ -4,9 +4,21 @@ import React from "react";
 export const PrintableBill = React.forwardRef(({ order }, ref) => {
    if (!order) return null;
 
-   // Calculate CGST & SGST separately
-   const cgst = order.taxes ? order.taxes / 2 : 0;
-   const sgst = order.taxes ? order.taxes / 2 : 0;
+   // ✅ FIX - use the stored cgst/sgst fields on the order
+   const cgst = order.cgst || 0;
+   const sgst = order.sgst || 0;
+   const igst = order.igst || 0;
+
+   // Calculate actual rates for display
+   const cgstRate =
+      order.totalAmount > 0
+         ? ((cgst / order.totalAmount) * 100).toFixed(1)
+         : 2.5;
+   const sgstRate =
+      order.totalAmount > 0
+         ? ((sgst / order.totalAmount) * 100).toFixed(1)
+         : 2.5;
+   const totalGstRate = parseFloat(cgstRate) + parseFloat(sgstRate);
 
    // Generate bill serial number (you should fetch this from backend)
    const billSerial = `B${new Date().getFullYear()}-${String(order.orderNumber).split("-")[2] || "001"}`;
@@ -137,15 +149,24 @@ export const PrintableBill = React.forwardRef(({ order }, ref) => {
             </div>
 
             {/* ✅ CGST & SGST BREAKDOWN (LEGALLY REQUIRED) */}
-            <div className="flex justify-between py-0.5">
-               <span>CGST @ 2.5%:</span>
-               <span>₹{cgst.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between py-0.5">
-               <span>SGST @ 2.5%:</span>
-               <span>₹{sgst.toFixed(2)}</span>
-            </div>
-
+            {cgst > 0 && (
+               <div className="flex justify-between py-0.5">
+                  <span>CGST @ {cgstRate}%:</span>
+                  <span>₹{cgst.toFixed(2)}</span>
+               </div>
+            )}
+            {sgst > 0 && (
+               <div className="flex justify-between py-0.5">
+                  <span>SGST @ {sgstRate}%:</span>
+                  <span>₹{sgst.toFixed(2)}</span>
+               </div>
+            )}
+            {igst > 0 && (
+               <div className="flex justify-between py-0.5">
+                  <span>IGST:</span>
+                  <span>₹{igst.toFixed(2)}</span>
+               </div>
+            )}
             {/* Service Charge (if applicable) */}
             {order.serviceCharge > 0 && (
                <div className="flex justify-between py-0.5">
@@ -222,7 +243,7 @@ export const PrintableBill = React.forwardRef(({ order }, ref) => {
          {/* ========== TAX SUMMARY (GOOD PRACTICE) ========== */}
          <div className="mb-3 text-[8px] bg-gray-100 p-2 rounded">
             <div className="font-semibold mb-1 text-center">
-               TAX BREAKUP (GST @ 5%)
+               <div>TAX BREAKUP (GST @ {totalGstRate}%)</div>
             </div>
             <div className="grid grid-cols-3 gap-1 text-center">
                <div>
