@@ -72,6 +72,7 @@ export default function OrderManagementPage() {
    const [error, setError] = useState("");
    const [selectedOrder, setSelectedOrder] = useState(null);
    const [showModal, setShowModal] = useState(false);
+   const [currentBill, setCurrentBill] = useState(null);
 
    // Filter and Search states
    const [searchTerm, setSearchTerm] = useState("");
@@ -113,12 +114,29 @@ export default function OrderManagementPage() {
    // Helper function  Smart Action Buttons
    const getOrderActions = (order) => {
       // ✅ CRITICAL FIX: Check payment status FIRST
-      if (order.paymentStatus === "completed") {
+      if (
+         order.paymentStatus === "completed" ||
+         order.paymentStatus === "refunded"
+      ) {
          return {
-            message: "✅ Paid & Closed",
+            message:
+               order.paymentStatus === "refunded"
+                  ? "🔄 Refunded"
+                  : "✅ Paid & Closed",
             canGenerateBill: false,
-            canPrint: true,
+            canPrint: true, // can still reprint the original locked bill
             canPay: false,
+            canWaive: false,
+         };
+      }
+
+      if (order.orderStatus === "cancelled") {
+         return {
+            message: "❌ Cancelled",
+            canGenerateBill: false,
+            canPrint: false,
+            canPay: false,
+            canWaive: false,
          };
       }
 
@@ -535,6 +553,41 @@ export default function OrderManagementPage() {
       "refunded",
    ];
 
+   const handleUpdateOrderStatus = async (orderId, newStatus) => {
+      const actionLabel = newStatus === "refunded" ? "refund" : "cancel";
+      const confirmed = window.confirm(
+         `Are you sure you want to ${actionLabel} order #${selectedOrder.orderNumber}? This cannot be undone.`,
+      );
+      if (!confirmed) return;
+
+      try {
+         const token = localStorage.getItem("adminToken");
+         await axios.put(
+            `${BASE_URL}/admin/inhouse/orders/${orderId}/status`,
+            { status: newStatus },
+            { headers: { Authorization: `Bearer ${token}` } },
+         );
+
+         // If refunding, also update paymentStatus
+         if (newStatus === "refunded") {
+            await axios.put(
+               `${BASE_URL}/admin/inhouse/orders/${orderId}/payment-status`,
+               { paymentStatus: "refunded" },
+               { headers: { Authorization: `Bearer ${token}` } },
+            );
+         }
+
+         toast.success(`Order ${newStatus} successfully`);
+         setShowModal(false);
+         setCurrentBill(null);
+         fetchOrders();
+      } catch (err) {
+         toast.error(
+            err.response?.data?.error || `Failed to ${actionLabel} order`,
+         );
+      }
+   };
+
    const clearFilters = () => {
       setSearchTerm("");
       setStatusFilter("all");
@@ -542,6 +595,23 @@ export default function OrderManagementPage() {
       setDateFilter("all");
       setSpecificDate("");
       setSortBy("newest");
+   };
+   const handleDeleteOrder = async (order) => {
+      const confirmed = window.confirm(
+         `Permanently delete order ${order.orderNumber}?\\n\\nThis cannot be undone.`,
+      );
+      if (!confirmed) return;
+
+      try {
+         const token = localStorage.getItem("adminToken");
+         await axios.delete(`${BASE_URL}/admin/inhouse/orders/${order._id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+         });
+         toast.success(`Order ${order.orderNumber} deleted`);
+         fetchOrders();
+      } catch (err) {
+         toast.error(err.response?.data?.error || "Failed to delete order");
+      }
    };
 
    return (
@@ -838,7 +908,56 @@ export default function OrderManagementPage() {
                               >
                                  👁 View Details
                               </button>
-
+                              {/* <button
+                                 onClick={() => handleDeleteOrder(order)}
+                                 className="bg-red-100 text-red-700 py-2 rounded-md text-sm font-bold border border-red-300 hover:bg-red-200"
+                              >
+                                 🗑 Delete Order
+                              </button> */}
+                              {/* ServiceCharge Waiver Only show it when: in-house order, payment not completed, service charge > 0 OR already waived */}
+                              {order.orderSource === "in-house" &&
+                                 order.paymentStatus !== "completed" &&
+                                 order.paymentStatus !== "refunded" &&
+                                 order.orderStatus !== "cancelled" &&
+                                 order.orderStatus !== "refunded" &&
+                                 (order.serviceCharge > 0 ||
+                                    order.serviceChargeWaived) && (
+                                    <button
+                                       onClick={async () => {
+                                          try {
+                                             const token =
+                                                localStorage.getItem(
+                                                   "adminToken",
+                                                );
+                                             const res = await axios.post(
+                                                `${BASE_URL}/admin/inhouse/${order._id}/waive-service-charge`,
+                                                {},
+                                                {
+                                                   headers: {
+                                                      Authorization: `Bearer ${token}`,
+                                                   },
+                                                },
+                                             );
+                                             toast.success(res.data.message);
+                                             fetchOrders();
+                                          } catch (err) {
+                                             toast.error(
+                                                err.response?.data?.error ||
+                                                   "Failed to toggle service charge",
+                                             );
+                                          }
+                                       }}
+                                       className={`px-2 py-1 rounded text-[10px] flex items-center gap-1 justify-center font-bold ${
+                                          order.serviceChargeWaived
+                                             ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                             : "bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-300"
+                                       }`}
+                                    >
+                                       {order.serviceChargeWaived
+                                          ? "↩ Restore S.C."
+                                          : "✕ Waive S.C."}
+                                    </button>
+                                 )}
                               {/* In-house flow */}
                               {order.orderSource === "in-house" && (
                                  <>
@@ -871,31 +990,41 @@ export default function OrderManagementPage() {
                                                       "adminToken",
                                                    );
 
-                                                // ✅ Use the inhouse route for in-house orders
-                                                const endpoint =
-                                                   order.orderSource ===
-                                                   "in-house"
-                                                      ? `${BASE_URL}/admin/inhouse/orders/${order._id}`
-                                                      : `${BASE_URL}/admin/orders/${order._id}`;
-
-                                                const response =
-                                                   await axios.get(endpoint, {
+                                                // Fetch the locked Bill snapshot first
+                                                const billRes = await axios.get(
+                                                   `${BASE_URL}/admin/inhouse/${order._id}/bill`,
+                                                   {
                                                       headers: {
                                                          Authorization: `Bearer ${token}`,
                                                       },
-                                                   });
-
-                                                setSelectedOrder(
-                                                   response.data.data ||
-                                                      response.data,
+                                                   },
                                                 );
+                                                setCurrentBill(
+                                                   billRes.data.data,
+                                                );
+
+                                                // Also fetch full order for any fallback fields
+                                                const orderRes =
+                                                   await axios.get(
+                                                      `${BASE_URL}/admin/inhouse/orders/${order._id}`,
+                                                      {
+                                                         headers: {
+                                                            Authorization: `Bearer ${token}`,
+                                                         },
+                                                      },
+                                                   );
+                                                setSelectedOrder(
+                                                   orderRes.data.data ||
+                                                      orderRes.data,
+                                                );
+
                                                 setTimeout(
                                                    () => handlePrint(),
                                                    150,
                                                 );
                                              } catch (err) {
                                                 toast.error(
-                                                   "Failed to load order for printing",
+                                                   "Failed to load bill for printing",
                                                 );
                                              }
                                           }}
@@ -972,6 +1101,11 @@ export default function OrderManagementPage() {
                                     >
                                        #{order.orderNumber}
                                     </div>
+                                    {order.tableNumber && (
+                                       <div className="text-sm font-bold text-indigo-600">
+                                          Table {order.tableNumber}
+                                       </div>
+                                    )}
                                     <div
                                        className="text-md
                                      text-gray-500"
@@ -1104,7 +1238,12 @@ export default function OrderManagementPage() {
                                     >
                                        <Eye size={14} /> View Details
                                     </button>
-
+                                    {/* <button
+                                       onClick={() => handleDeleteOrder(order)}
+                                       className="text-red-600 hover:text-red-800 flex items-center gap-1 text-sm"
+                                    >
+                                       <X size={14} /> Delete
+                                    </button> */}
                                     {/* IN-HOUSE SPECIFIC ACTIONS */}
 
                                     {/* IN-HOUSE SPECIFIC ACTIONS */}
@@ -1121,6 +1260,63 @@ export default function OrderManagementPage() {
                                                       {actions.message}
                                                    </div>
                                                 )}
+
+                                                {/* ServiceCharge Waiver Only show it when: in-house order, payment not completed, service charge > 0 OR already waived */}
+                                                {order.orderSource ===
+                                                   "in-house" &&
+                                                   order.paymentStatus !==
+                                                      "completed" &&
+                                                   order.paymentStatus !==
+                                                      "refunded" &&
+                                                   order.orderStatus !==
+                                                      "cancelled" &&
+                                                   order.orderStatus !==
+                                                      "refunded" &&
+                                                   (order.serviceCharge > 0 ||
+                                                      order.serviceChargeWaived) && (
+                                                      <button
+                                                         onClick={async () => {
+                                                            try {
+                                                               const token =
+                                                                  localStorage.getItem(
+                                                                     "adminToken",
+                                                                  );
+                                                               const res =
+                                                                  await axios.post(
+                                                                     `${BASE_URL}/admin/inhouse/${order._id}/waive-service-charge`,
+                                                                     {},
+                                                                     {
+                                                                        headers:
+                                                                           {
+                                                                              Authorization: `Bearer ${token}`,
+                                                                           },
+                                                                     },
+                                                                  );
+                                                               toast.success(
+                                                                  res.data
+                                                                     .message,
+                                                               );
+                                                               fetchOrders();
+                                                            } catch (err) {
+                                                               toast.error(
+                                                                  err.response
+                                                                     ?.data
+                                                                     ?.error ||
+                                                                     "Failed to toggle service charge",
+                                                               );
+                                                            }
+                                                         }}
+                                                         className={`px-2 py-1 rounded text-[10px] flex items-center gap-1 justify-center font-bold ${
+                                                            order.serviceChargeWaived
+                                                               ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                               : "bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-300"
+                                                         }`}
+                                                      >
+                                                         {order.serviceChargeWaived
+                                                            ? "↩ Restore S.C."
+                                                            : "✕ Waive S.C."}
+                                                      </button>
+                                                   )}
 
                                                 {/* Step 1: Generate Bill */}
                                                 {actions.canGenerateBill && (
@@ -1152,28 +1348,37 @@ export default function OrderManagementPage() {
                                                                   "adminToken",
                                                                );
 
-                                                            // ✅ Use the inhouse route for in-house orders
-                                                            const endpoint =
-                                                               order.orderSource ===
-                                                               "in-house"
-                                                                  ? `${BASE_URL}/admin/inhouse/orders/${order._id}`
-                                                                  : `${BASE_URL}/admin/orders/${order._id}`;
-
-                                                            const response =
+                                                            // Fetch the locked Bill snapshot first
+                                                            const billRes =
                                                                await axios.get(
-                                                                  endpoint,
+                                                                  `${BASE_URL}/admin/inhouse/${order._id}/bill`,
                                                                   {
                                                                      headers: {
                                                                         Authorization: `Bearer ${token}`,
                                                                      },
                                                                   },
                                                                );
-
-                                                            setSelectedOrder(
-                                                               response.data
-                                                                  .data ||
-                                                                  response.data,
+                                                            setCurrentBill(
+                                                               billRes.data
+                                                                  .data,
                                                             );
+
+                                                            // Also fetch full order for any fallback fields
+                                                            const orderRes =
+                                                               await axios.get(
+                                                                  `${BASE_URL}/admin/inhouse/orders/${order._id}`,
+                                                                  {
+                                                                     headers: {
+                                                                        Authorization: `Bearer ${token}`,
+                                                                     },
+                                                                  },
+                                                               );
+                                                            setSelectedOrder(
+                                                               orderRes.data
+                                                                  .data ||
+                                                                  orderRes.data,
+                                                            );
+
                                                             setTimeout(
                                                                () =>
                                                                   handlePrint(),
@@ -1181,7 +1386,7 @@ export default function OrderManagementPage() {
                                                             );
                                                          } catch (err) {
                                                             toast.error(
-                                                               "Failed to load order for printing",
+                                                               "Failed to load bill for printing",
                                                             );
                                                          }
                                                       }}
@@ -1269,12 +1474,27 @@ export default function OrderManagementPage() {
                      <h2 className="text-2xl font-bold">
                         Order Details - #{selectedOrder.orderNumber}
                      </h2>
-                     <button
-                        onClick={() => setShowModal(false)}
-                        className="absolute top-3 right-3 md:right-1/4 bg-white rounded-full  border border-red-600 shadow-md p-2 hover:bg-red-100 transition"
-                     >
-                        <X size={20} />
-                     </button>
+                     <div className="flex items-center gap-2 absolute top-3 right-3 md:right-1/4">
+                        <button
+                           onClick={async () => {
+                              setShowModal(false);
+                              setCurrentBill(null);
+                              await handleDeleteOrder(selectedOrder);
+                           }}
+                           className="bg-red-100 text-red-700 border border-red-400 rounded-full px-3 py-1 text-sm font-bold hover:bg-red-200 flex items-center gap-1"
+                        >
+                           <X size={14} /> Delete Order
+                        </button>
+                        <button
+                           onClick={() => {
+                              setShowModal(false);
+                              setCurrentBill(null);
+                           }}
+                           className="bg-white rounded-full border border-gray-400 shadow-md p-2 hover:bg-gray-100 transition"
+                        >
+                           <X size={20} />
+                        </button>
+                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1577,14 +1797,79 @@ export default function OrderManagementPage() {
                            </div>
                         </div>
                      )}
+                  {/* ── Cancel / Refund ── */}
+                  {selectedOrder.orderSource === "in-house" &&
+                     (() => {
+                        const isPaid =
+                           selectedOrder.paymentStatus === "completed";
+                        const isCancelled =
+                           selectedOrder.orderStatus === "cancelled";
+                        const isRefunded =
+                           selectedOrder.orderStatus === "refunded";
+                        const isDone = isCancelled || isRefunded;
 
+                        if (isDone)
+                           return (
+                              <div className="mt-4 pt-4 border-t">
+                                 <span
+                                    className={`px-3 py-1 rounded-full text-sm font-bold ${
+                                       isRefunded
+                                          ? "bg-orange-100 text-orange-700"
+                                          : "bg-red-100 text-red-700"
+                                    }`}
+                                 >
+                                    {isRefunded
+                                       ? "🔄 REFUNDED"
+                                       : "❌ CANCELLED"}
+                                 </span>
+                              </div>
+                           );
+
+                        return (
+                           <div className="mt-4 pt-4 border-t flex gap-3">
+                              {/* Cancel — only if NOT paid */}
+                              {!isPaid && (
+                                 <button
+                                    onClick={() =>
+                                       handleUpdateOrderStatus(
+                                          selectedOrder._id,
+                                          "cancelled",
+                                       )
+                                    }
+                                    className="bg-red-100 text-red-700 border border-red-300 px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-200"
+                                 >
+                                    ❌ Cancel Order
+                                 </button>
+                              )}
+
+                              {/* Refund — only if paid */}
+                              {isPaid && (
+                                 <button
+                                    onClick={() =>
+                                       handleUpdateOrderStatus(
+                                          selectedOrder._id,
+                                          "refunded",
+                                       )
+                                    }
+                                    className="bg-orange-100 text-orange-700 border border-orange-300 px-4 py-2 rounded-lg text-sm font-bold hover:bg-orange-200"
+                                 >
+                                    🔄 Refund Order
+                                 </button>
+                              )}
+                           </div>
+                        );
+                     })()}
                   <OrderTimeline order={selectedOrder} />
                </div>
             </div>
          )}
          <div className="hidden shadow-none pointer-events-none">
             <div className="block">
-               <PrintableBill ref={componentRef} order={selectedOrder} />
+               <PrintableBill
+                  ref={componentRef}
+                  order={selectedOrder}
+                  bill={currentBill}
+               />
             </div>
          </div>
       </div>
